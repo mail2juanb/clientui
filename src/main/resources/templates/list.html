@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>MicroDiab</title>
+    <link rel="stylesheet" type="text/css" href="webjars/bootstrap/5.0.0/css/bootstrap.min.css"/>
+</head>
+
+<body>
+<div class="container">
+    <h1>List of Patients recorded in database</h1>
+    <div class="row">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Lastname</th>
+                <th>Firstname</th>
+                <th>Date of Birth</th>
+                <th>Gender</th>
+                <th>Address</th>
+                <th>Phone</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:if="${not #lists.isEmpty(patients)}">
+                <tr th:each="patient : ${patients}">
+                    <td style="width: 10%" th:text="${patient.id}"></td>
+                    <td th:text="${patient.lastname}"></td>
+                    <td th:text="${patient.firstname}"></td>
+                    <td th:text="${patient.dateofbirth}"></td>
+                    <td th:text="${patient.gender == 'M'} ? 'Male' : (${patient.gender == 'F'} ? 'Female' : ${patient.gender})"></td>
+                    <td th:text="${patient.address}"></td>
+                    <td th:text="${patient.phone}"></td>
+                    <td style="width: 15%" class="text-center">
+                        <a th:href="@{/update/{id}(id=${patient.id})}">Edit</a>&nbsp;|&nbsp;
+                        <a th:href="@{/delete/{id}(id=${patient.id})}">Delete</a>
+                    </td>
+                </tr>
+            </th:block>
+            <th:block th:unless="${not #lists.isEmpty(patients)}">
+                <tr>
+                    <td colspan="8" class="text-center">Nothing to display</td>
+                </tr>
+            </th:block>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript" src="webjars/bootstrap/5.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>
+
