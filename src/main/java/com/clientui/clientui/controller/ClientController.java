@@ -19,7 +19,7 @@ public class ClientController {
     }
 
 
-    @RequestMapping("/")
+    @RequestMapping("/home")
     public String showHomes() {
         return "home";
     }

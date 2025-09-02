@@ -8,13 +8,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
 
 
-@FeignClient(name = "Mpatient", url = "localhost:9001")
+//@FeignClient(name = "mpatient", url = "localhost:9001")
+@FeignClient(name = "mgateway", url = "localhost:9010")
 public interface MicroservicePatientsProxy {
 
-    @GetMapping(value = "/Patients")
+    @GetMapping(value = "/mpatient/patients")
     List<PatientBean> retrievePatientList();
 
-    @GetMapping(value = "/Patient/{id}")
+    @GetMapping(value = "/mpatient/patient/{id}")
     PatientBean retrievePatientId(@PathVariable("id") Long id);
 
 }
