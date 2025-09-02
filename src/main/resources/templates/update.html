@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>MicroDiab</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/5.0.0/css/bootstrap.min.css}"/>
+</head>
+
+<body>
+    <div class="container mt-4">
+        <div class="row mb-3">
+            <h1 class="text-center">
+                Update Patient id =
+                <span th:text="${patient.id}" class="text-danger"></span>
+            </h1>
+        </div>
+
+        <form action="#" th:action="@{/update/{id}(id=${patient.id})}" th:object="${patient}" method="post" class="w-100">
+
+            <!-- Lastname -->
+            <div class="mb-3 row">
+                <label for="lastname" class="col-sm-2 col-form-label">Lastname</label>
+                <div class="col-sm-10">
+                    <input type="text" th:field="*{lastname}" id="lastname" placeholder="Lastname" class="form-control w-50">
+                    <p class="text-danger" th:if="${#fields.hasErrors('lastname')}" th:errors="*{lastname}"></p>
+                </div>
+            </div>
+
+            <!-- Firstname -->
+            <div class="mb-3 row">
+                <label for="firstname" class="col-sm-2 col-form-label">Firstname</label>
+                <div class="col-sm-10">
+                    <input type="text" th:field="*{firstname}" id="firstname" placeholder="Lastname" class="form-control w-50">
+                    <p class="text-danger" th:if="${#fields.hasErrors('firstname')}" th:errors="*{firstname}"></p>
+                </div>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="mb-3 row">
+                <label for="dateofbirth" class="col-sm-2 col-form-label">Date of Birth</label>
+                <div class="col-sm-10">
+                    <input type="date" th:value="${#temporals.format(patient.dateofbirth, 'yyyy-MM-dd')}" id="dateofbirth" class="form-control w-50">
+                    <p class="text-danger" th:if="${#fields.hasErrors('dateofbirth')}" th:errors="*{dateofbirth}"></p>
+                </div>
+            </div>
+
+            <!-- Gender -->
+            <div class="mb-3 row">
+                <label for="gender" class="col-sm-2 col-form-label">Gender</label>
+                <div class="col-sm-10">
+                    <select th:field="*{gender}" id="gender" class="form-select w-50">
+                        <option value="" disabled>Select gender</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                    <p class="text-danger" th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}"></p>
+                </div>
+            </div>
+
+            <!-- Address -->
+            <div class="mb-3 row">
+                <label for="address" class="col-sm-2 col-form-label">Address</label>
+                <div class="col-sm-10">
+                    <input type="text" th:field="*{address}" id="address" placeholder="Address" class="form-control w-50">
+                    <p class="text-danger" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></p>
+                </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="mb-3 row">
+                <label for="phone" class="col-sm-2 col-form-label">Phone</label>
+                <div class="col-sm-10">
+                    <input type="text" th:field="*{phone}" id="phone" placeholder="Phone" class="form-control w-50">
+                    <p class="text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="mb-3 row">
+                <div class="col-sm-12">
+                    <input type="hidden" th:field="*{id}">
+                    <a class="btn btn-danger btn-sm" th:href="@{/patients}">Cancel</a>
+                    <input class="btn btn-primary btn-sm" type="submit" value="Update">
+                </div>
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/5.0.0/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
