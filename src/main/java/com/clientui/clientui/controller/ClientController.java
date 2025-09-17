@@ -5,6 +5,7 @@ import com.clientui.clientui.proxies.MicroservicePatientsProxy;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
@@ -20,7 +21,14 @@ public class ClientController {
 
 
     @RequestMapping("/home")
-    public String showHomes() {
+    public String showHomes(
+            @RequestHeader(value = "X-Auth-Username", required = false, defaultValue = "Unknown") String username,
+            @RequestHeader(value = "X-Auth-Roles", required = false, defaultValue = "USER") String roles,
+            Model model) {
+
+        model.addAttribute("userConnected", username);
+        model.addAttribute("userRole", roles);
+
         return "home";
     }
 
