@@ -77,6 +77,12 @@
             <artifactId>zipkin-reporter-brave</artifactId>
         </dependency>
 
+        <!-- Pour la creation automatique de span @NewSpan-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
         <!-- Optionnel : pour les logs avec trace ID -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
