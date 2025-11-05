@@ -34,8 +34,8 @@ public class ClientController {
     @RequestMapping("/home")
     @NewSpan("clientui-home-display")
     public String showHomes(
-            @RequestHeader(value = "X-Auth-Username", required = false, defaultValue = "Unknown") String username,
-            @RequestHeader(value = "X-Auth-Roles", required = false, defaultValue = "USER") String roles,
+            @RequestHeader(value = "X-Auth-Username", required = false, defaultValue = "PasDeUsername") String username,
+            @RequestHeader(value = "X-Auth-Roles", required = false, defaultValue = "PasDeRole") String roles,
             Model model) {
 
         // Récupère le span courant (créé automatiquement par @NewSpan)
