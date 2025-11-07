@@ -3,11 +3,9 @@ package com.clientui.clientui.filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 
-@Component
+
 public class AuthHeadersFilter implements Filter {
     // filtre pour extraire les headers (webflux) et les stocker dans un objet accessible aux controleurs
 
@@ -17,6 +15,8 @@ public class AuthHeadersFilter implements Filter {
 
         System.out.println("=== AuthHeadersFilter: Début du filtre ==="); // Log de début
         HttpServletRequest httpRequest = (HttpServletRequest) request;
+        System.out.println("Request URL: " + httpRequest.getRequestURL().toString()); // <-- Ajoute cette ligne
+        System.out.println("Request URI: " + httpRequest.getRequestURI()); // <-- Optionnel, pour plus de détails
 
         // Lire les headers
         String username = httpRequest.getHeader("X-Auth-Username");
