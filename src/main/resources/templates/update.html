@@ -14,7 +14,9 @@
                 <span th:text="${patient.id}" class="text-danger"></span>
             </h1>
         </div>
-        <h3>Patient information</h3>
+        <div class="row mb-3">
+            <h4>Patient information</h4>
+        </div>
         <form action="#" th:action="@{/update/{id}(id=${patient.id})}" th:object="${patient}" method="post" class="w-100">
 
             <!-- Lastname -->
@@ -84,26 +86,37 @@
                 </div>
             </div>
         </form>
-        <!-- Add note section -->
+
+        <!-- Section Notes -->
         <div class="row mt-4">
-            <h3>New Note</h3>
-            <form th:action="@{/patients/{id}/notes(id=${patient.id})}" method="post">
-                <div class="mb-3">
-                    <textarea class="form-control" name="noteContent" rows="3" placeholder="Saisir une nouvelle note..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-success">Enregistrer la note</button>
-            </form>
-        </div>
-        <!-- Section pour afficher les notes précédentes -->
-        <div class="row mt-4">
-            <h3>Previous Notes</h3>
-            <div class="list-group">
-                <div th:each="note : ${patientNotes}" class="list-group-item">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1" th:text="${note.date}"></h5>
+            <h2>Notes</h2>
+
+            <!-- Sous-section : Ajouter une note -->
+            <div class="mb-4">
+                <h4>Add Note</h4>
+                <form th:action="@{/patients/{id}/notes(id=${patient.id})}" method="post">
+                    <div class="mb-3 row">
+                        <div class="col-sm-10">
+                            <textarea class="form-control w-50" name="noteContent" rows="3" placeholder="Enter note here..."></textarea>
+                        </div>
                     </div>
-                    <p class="mb-1" th:text="${note.content}"></p>
-                </div>
+                    <div class="mb-3 row">
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-primary btn-sm">Save Note</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sous-section : Notes précédentes -->
+            <div>
+                <h4>Previous Notes</h4>
+                <ul class="list-group w-50">
+                    <li th:each="note : ${patientNotes}"
+                        class="list-group-item"
+                        th:text="${note.date} + ' - ' + ${note.content}">
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
