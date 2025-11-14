@@ -10,11 +10,11 @@
     <div class="container mt-4">
         <div class="row mb-3">
             <h1 class="text-center">
-                Update Patient id =
+                Patient folder id =
                 <span th:text="${patient.id}" class="text-danger"></span>
             </h1>
         </div>
-
+        <h3>Patient information</h3>
         <form action="#" th:action="@{/update/{id}(id=${patient.id})}" th:object="${patient}" method="post" class="w-100">
 
             <!-- Lastname -->
@@ -84,6 +84,28 @@
                 </div>
             </div>
         </form>
+        <!-- Add note section -->
+        <div class="row mt-4">
+            <h3>New Note</h3>
+            <form th:action="@{/patients/{id}/notes(id=${patient.id})}" method="post">
+                <div class="mb-3">
+                    <textarea class="form-control" name="noteContent" rows="3" placeholder="Saisir une nouvelle note..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Enregistrer la note</button>
+            </form>
+        </div>
+        <!-- Section pour afficher les notes précédentes -->
+        <div class="row mt-4">
+            <h3>Previous Notes</h3>
+            <div class="list-group">
+                <div th:each="note : ${patientNotes}" class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1" th:text="${note.date}"></h5>
+                    </div>
+                    <p class="mb-1" th:text="${note.content}"></p>
+                </div>
+            </div>
+        </div>
     </div>
     <script type="text/javascript" th:src="@{/webjars/bootstrap/5.0.0/js/bootstrap.bundle.min.js}"></script>
 </body>
