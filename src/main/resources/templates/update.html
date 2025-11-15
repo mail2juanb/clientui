@@ -107,9 +107,14 @@
         <!-- Sous-section : Notes précédentes -->
         <div>
             <h4>Previous Notes</h4>
-            <ul class="list-group w-50">
-                <li th:each="note : ${patientNotes}" class="list-group-item" th:text="${note.date} + ' - ' + ${note.content}"></li>
-            </ul>
+            <div th:if="${not #lists.isEmpty(notes)}">
+                <ul class="list-group w-50">
+                    <li th:each="note : ${notes}" class="list-group-item" th:text="'Undefined Date - ' + ${note.note}"></li>
+                </ul>
+            </div>
+            <div th:if="${#lists.isEmpty(notes)}" class="alert alert-info w-50">
+                No notes available for this patient.
+            </div>
         </div>
     </div>
 </div>

@@ -1,7 +1,8 @@
 package com.clientui.clientui.controller;
 
+import com.clientui.clientui.beans.NoteBean;
 import com.clientui.clientui.beans.PatientBean;
-import com.clientui.clientui.proxies.MicroservicePatientsProxy;
+import com.clientui.clientui.proxies.MicroservicesProxy;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.annotation.NewSpan;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -24,10 +26,10 @@ public class ClientController {
     @Autowired
     private Tracer tracer;
 
-    private final MicroservicePatientsProxy patientsProxy;
+    private final MicroservicesProxy servicesProxy;
 
-    public ClientController(MicroservicePatientsProxy patientsProxy) {
-        this.patientsProxy = patientsProxy;
+    public ClientController(MicroservicesProxy servicesProxy) {
+        this.servicesProxy = servicesProxy;
     }
 
 
@@ -76,7 +78,7 @@ public class ClientController {
             logger.warn("Rendu de la page liste des patients - Aucun span courant trouvé pour la méthode showPatients.");
         }
 
-        List<PatientBean> patients = patientsProxy.retrievePatientList();;
+        List<PatientBean> patients = servicesProxy.retrievePatientList();;
         model.addAttribute("patients", patients);
         return "list";
     }
@@ -98,8 +100,19 @@ public class ClientController {
             logger.warn("Rendu de la page MAJ Patient id = {} - Aucun span courant trouvé pour la méthode showUpdateForm.", id);
         }
 
-        final PatientBean patient = patientsProxy.retrievePatientId(id);
+        // Récupération du patient
+        final PatientBean patient = servicesProxy.retrievePatientId(id);
         model.addAttribute("patient", patient);
+
+        // Récupération des notes avec gestion du cas null
+        List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
+        logger.info("Note list size = {}", notes.size());
+        if (notes == null) {
+            notes = new ArrayList<>(); // Liste vide par défaut
+            logger.warn("Aucune note trouvée pour le patient ID : {}. Liste vide initialisée.", id);
+        }
+        model.addAttribute("notes", notes);
+
         return "update";
     }
 
