@@ -14,24 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
-//    @Autowired
-//    public void registerAuthProvider(AuthenticationManagerBuilder auth) throws Exception {
-//        // Authentification simple en mémoire pour les tests
-//        auth.inMemoryAuthentication();
-//    }
-
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomizer() {
-//        // On indique à Spring Security d'ignorer complètement les ressources statiques
-//        return web -> web.ignoring().requestMatchers(
-//                "/webjars/**",   // -nécessaire pour Bootstrap via WebJars
-//                "/css/**",
-//                "/js/**",
-//                "/images/**",
-//                "/favicon.ico"
-//        );
-//    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -46,22 +28,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-//                                .requestMatchers(HttpMethod.GET, "/books")
-//                                .permitAll()
-//
-//                                .requestMatchers(HttpMethod.GET, "/books/*")
-//                                .permitAll()
-//
-//                                .requestMatchers(HttpMethod.POST, "/books")
-//                                .hasRole("ADMIN")
-//
-//                                .requestMatchers(HttpMethod.PATCH, "/books/*")
-//                                .hasRole("ADMIN")
-//
-//                                .requestMatchers(HttpMethod.DELETE, "/books/*")
-//                                .hasRole("ADMIN")
 
-                .httpBasic(Customizer.withDefaults())           // Optionnel, si fallback
+                .httpBasic(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .addFilterBefore(new HeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
