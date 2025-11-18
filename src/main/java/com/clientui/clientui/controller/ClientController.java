@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,16 @@ public class ClientController {
 
     public ClientController(MicroservicesProxy servicesProxy) {
         this.servicesProxy = servicesProxy;
+    }
+
+    // Méthode pour ajouter automatiquement userConnected et userRole à chaque modèle
+    @ModelAttribute
+    public void addUserInfoToModel(
+            @RequestHeader(value = "X-Auth-Username", required = false, defaultValue = "PasDeUsername") String username,
+            @RequestHeader(value = "X-Auth-Roles", required = false, defaultValue = "PasDeRole") String roles,
+            Model model) {
+        model.addAttribute("userConnected", username);
+        model.addAttribute("userRole", roles);
     }
 
 
@@ -56,6 +67,7 @@ public class ClientController {
         }
 
             // Logique métier
+            model.addAttribute("currentPage", "home");
             model.addAttribute("userConnected", username);
             model.addAttribute("userRole", roles);
 
@@ -78,8 +90,16 @@ public class ClientController {
             logger.warn("Rendu de la page liste des patients - Aucun span courant trouvé pour la méthode showPatients.");
         }
 
+        // Ajout des attributs pour le template
+        // Implémenté automatiquement via addUserInfoToModel - @ModemAttribute
+//        model.addAttribute("userConnected", username);
+//        model.addAttribute("userRole", roles);
+
+        // Logique métier
+        model.addAttribute("currentPage", "patients");
         List<PatientBean> patients = servicesProxy.retrievePatientList();;
         model.addAttribute("patients", patients);
+
         return "list";
     }
 
@@ -100,6 +120,8 @@ public class ClientController {
             logger.warn("Rendu de la page MAJ Patient id = {} - Aucun span courant trouvé pour la méthode showUpdateForm.", id);
         }
 
+        // Logique métier
+        model.addAttribute("currentPage", "update");
         // Récupération du patient
         final PatientBean patient = servicesProxy.retrievePatientId(id);
         model.addAttribute("patient", patient);

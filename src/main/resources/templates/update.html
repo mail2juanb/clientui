@@ -5,119 +5,120 @@
     <title>MicroDiab - Patient Details</title>
     <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/5.0.0/css/bootstrap.min.css}"/>
 </head>
-<body>
-<div class="container mt-4">
-    <!-- Titre principal -->
-    <div class="row mb-4">
-        <h1 class="text-center">
-            Patient folder id =
-            <span th:text="${patient.id}" class="text-danger"></span>
-        </h1>
-    </div>
 
-    <!-- Section : Informations du patient -->
-    <div class="row mb-4">
-        <h2>Patient Information</h2>
-        <form action="#" th:action="@{/update/{id}(id=${patient.id})}" th:object="${patient}" method="post" class="w-100">
-            <!-- Champs du formulaire -->
-            <div class="mb-3 row">
-                <label for="lastname" class="col-sm-2 col-form-label">Lastname</label>
-                <div class="col-sm-10">
-                    <input type="text" th:field="*{lastname}" id="lastname" placeholder="Lastname" class="form-control w-50">
-                    <p class="text-danger" th:if="${#fields.hasErrors('lastname')}" th:errors="*{lastname}"></p>
-                </div>
-            </div>
+<body class="d-flex flex-column vh-100">
 
-            <div class="mb-3 row">
-                <label for="firstname" class="col-sm-2 col-form-label">Firstname</label>
-                <div class="col-sm-10">
-                    <input type="text" th:field="*{firstname}" id="firstname" placeholder="Firstname" class="form-control w-50">
-                    <p class="text-danger" th:if="${#fields.hasErrors('firstname')}" th:errors="*{firstname}"></p>
-                </div>
-            </div>
+<!-- Header -->
+<th:block th:replace="fragments :: header"></th:block>
 
-            <div class="mb-3 row">
-                <label for="dateofbirth" class="col-sm-2 col-form-label">Date of Birth</label>
-                <div class="col-sm-10">
-                    <input type="date" th:value="${#temporals.format(patient.dateofbirth, 'yyyy-MM-dd')}" id="dateofbirth" class="form-control w-50">
-                    <p class="text-danger" th:if="${#fields.hasErrors('dateofbirth')}" th:errors="*{dateofbirth}"></p>
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label for="gender" class="col-sm-2 col-form-label">Gender</label>
-                <div class="col-sm-10">
-                    <select th:field="*{gender}" id="gender" class="form-select w-50">
-                        <option value="" disabled selected>Select gender</option>
-                        <option value="M">Male</option>
-                        <option value="F">Female</option>
-                    </select>
-                    <p class="text-danger" th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}"></p>
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label for="address" class="col-sm-2 col-form-label">Address</label>
-                <div class="col-sm-10">
-                    <input type="text" th:field="*{address}" id="address" placeholder="Address" class="form-control w-50">
-                    <p class="text-danger" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></p>
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label for="phone" class="col-sm-2 col-form-label">Phone</label>
-                <div class="col-sm-10">
-                    <input type="text" th:field="*{phone}" id="phone" placeholder="Phone" class="form-control w-50">
-                    <p class="text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
-                </div>
-            </div>
-
-            <!-- Boutons -->
-            <div class="mb-3 row">
-                <div class="col-sm-12 d-flex gap-2">
-                    <input type="hidden" th:field="*{id}">
-                    <a class="btn btn-outline-danger" th:href="@{/patients}">Cancel</a>
-                    <input class="btn btn-primary" type="submit" value="Update">
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <!-- Section : Notes -->
-    <div class="row mt-4">
-        <h2>Notes</h2>
-
-        <!-- Sous-section : Ajouter une note -->
-        <div class="mb-4">
-            <h4>Add Note</h4>
-            <form th:action="@{/patients/{id}/notes(id=${patient.id})}" method="post">
+<!-- Corps principal -->
+<main class="flex-grow-1 py-4">
+    <div class="container mt-4">
+        <!-- Titre principal -->
+        <div class="row mb-4">
+            <h1 class="text-center">
+                Patient folder id =
+                <span th:text="${patient.id}" class="text-danger"></span>
+            </h1>
+        </div>
+        <!-- Section : Informations du patient -->
+        <div class="row mb-4">
+            <h2>Patient Information</h2>
+            <form action="#" th:action="@{/update/{id}(id=${patient.id})}" th:object="${patient}" method="post" class="w-100">
+                <!-- Champs du formulaire -->
                 <div class="mb-3 row">
+                    <label for="lastname" class="col-sm-2 col-form-label">Lastname</label>
                     <div class="col-sm-10">
-                        <textarea class="form-control w-50" name="noteContent" rows="3" placeholder="Enter note here..."></textarea>
+                        <input type="text" th:field="*{lastname}" id="lastname" placeholder="Lastname" class="form-control w-50">
+                        <p class="text-danger" th:if="${#fields.hasErrors('lastname')}" th:errors="*{lastname}"></p>
                     </div>
                 </div>
                 <div class="mb-3 row">
+                    <label for="firstname" class="col-sm-2 col-form-label">Firstname</label>
                     <div class="col-sm-10">
-                        <button type="submit" class="btn btn-primary">Save Note</button>
+                        <input type="text" th:field="*{firstname}" id="firstname" placeholder="Firstname" class="form-control w-50">
+                        <p class="text-danger" th:if="${#fields.hasErrors('firstname')}" th:errors="*{firstname}"></p>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="dateofbirth" class="col-sm-2 col-form-label">Date of Birth</label>
+                    <div class="col-sm-10">
+                        <input type="date" th:value="${#temporals.format(patient.dateofbirth, 'yyyy-MM-dd')}" id="dateofbirth" class="form-control w-50">
+                        <p class="text-danger" th:if="${#fields.hasErrors('dateofbirth')}" th:errors="*{dateofbirth}"></p>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="gender" class="col-sm-2 col-form-label">Gender</label>
+                    <div class="col-sm-10">
+                        <select th:field="*{gender}" id="gender" class="form-select w-50">
+                            <option value="" disabled selected>Select gender</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                        <p class="text-danger" th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}"></p>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="address" class="col-sm-2 col-form-label">Address</label>
+                    <div class="col-sm-10">
+                        <input type="text" th:field="*{address}" id="address" placeholder="Address" class="form-control w-50">
+                        <p class="text-danger" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></p>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="phone" class="col-sm-2 col-form-label">Phone</label>
+                    <div class="col-sm-10">
+                        <input type="text" th:field="*{phone}" id="phone" placeholder="Phone" class="form-control w-50">
+                        <p class="text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
+                    </div>
+                </div>
+                <!-- Boutons -->
+                <div class="mb-3 row">
+                    <div class="col-sm-12 d-flex gap-2">
+                        <input type="hidden" th:field="*{id}">
+                        <a class="btn btn-outline-danger" th:href="@{/patients}">Cancel</a>
+                        <input class="btn btn-primary" type="submit" value="Update">
                     </div>
                 </div>
             </form>
         </div>
-
-        <!-- Sous-section : Notes précédentes -->
-        <div>
-            <h4>Previous Notes</h4>
-            <div th:if="${not #lists.isEmpty(notes)}">
-                <ul class="list-group w-50">
-                    <li th:each="note : ${notes}" class="list-group-item" th:text="'Undefined Date - ' + ${note.note}"></li>
-                </ul>
+        <!-- Section : Notes -->
+        <div class="row mt-4">
+            <h2>Notes</h2>
+            <!-- Sous-section : Ajouter une note -->
+            <div class="mb-4">
+                <h4>Add Note</h4>
+                <form th:action="@{/patients/{id}/notes(id=${patient.id})}" method="post">
+                    <div class="mb-3 row">
+                        <div class="col-sm-10">
+                            <textarea class="form-control w-50" name="noteContent" rows="3" placeholder="Enter note here..."></textarea>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-primary">Save Note</button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div th:if="${#lists.isEmpty(notes)}" class="alert alert-info w-50">
-                No notes available for this patient.
+            <!-- Sous-section : Notes précédentes -->
+            <div>
+                <h4>Previous Notes</h4>
+                <div th:if="${not #lists.isEmpty(notes)}">
+                    <ul class="list-group w-50">
+                        <li th:each="note : ${notes}" class="list-group-item" th:text="'Undefined Date - ' + ${note.note}"></li>
+                    </ul>
+                </div>
+                <div th:if="${#lists.isEmpty(notes)}" class="alert alert-info w-50">
+                    No notes available for this patient.
+                </div>
             </div>
         </div>
     </div>
-</div>
+</main>
+
+<!-- Footer -->
+<th:block th:replace="fragments :: footer"></th:block>
 
 <script type="text/javascript" th:src="@{/webjars/bootstrap/5.0.0/js/bootstrap.bundle.min.js}"></script>
 </body>
