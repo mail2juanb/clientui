@@ -19,28 +19,28 @@
                 <table class="table table-bordered table-striped">
                     <thead class="table-dark">
                     <tr>
-                        <th>Id</th>
+<!--                        <th>Id</th>-->
                         <th>Nom</th>
                         <th>Prénom</th>
                         <th>Date de Naissance</th>
-                        <th>Genre</th>
-                        <th>Adresse</th>
-                        <th>Téléphone</th>
+<!--                        <th>Genre</th>-->
+<!--                        <th>Adresse</th>-->
+<!--                        <th>Téléphone</th>-->
                         <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     <th:block th:if="${not #lists.isEmpty(patients)}">
                         <tr th:each="patient : ${patients}">
-                            <td style="width: 10%" th:text="${patient.id}"></td>
+<!--                            <td style="width: 10%" th:text="${patient.id}"></td>-->
                             <td th:text="${patient.lastname}"></td>
                             <td th:text="${patient.firstname}"></td>
                             <td th:text="${patient.dateofbirth}"></td>
-                            <td th:text="${patient.gender == 'M'} ? 'Homme' : (${patient.gender == 'F'} ? 'Femme' : ${patient.gender})"></td>
-                            <td th:text="${patient.address}"></td>
-                            <td th:text="${patient.phone}"></td>
+<!--                            <td th:text="${patient.gender == 'M'} ? 'Homme' : (${patient.gender == 'F'} ? 'Femme' : ${patient.gender})"></td>-->
+<!--                            <td th:text="${patient.address}"></td>-->
+<!--                            <td th:text="${patient.phone}"></td>-->
                             <td style="width: 15%" class="text-center">
-                                <a th:href="@{/update/{id}(id=${patient.id})}" class="btn btn-sm btn-outline-primary me-1">Modifier</a>
+                                <a th:href="@{/update/{id}(id=${patient.id})}" class="btn btn-sm btn-outline-primary me-1">Editer</a>
                                 <a th:href="@{/delete/{id}(id=${patient.id})}" class="btn btn-sm btn-outline-danger">Supprimer</a>
                             </td>
                         </tr>
