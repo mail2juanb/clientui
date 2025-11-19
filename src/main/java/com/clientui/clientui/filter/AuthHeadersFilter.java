@@ -3,37 +3,44 @@ package com.clientui.clientui.filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 
 public class AuthHeadersFilter implements Filter {
     // filtre pour extraire les headers (webflux) et les stocker dans un objet accessible aux controleurs
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthHeadersFilter.class);
+
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        System.out.println("=== AuthHeadersFilter: Début du filtre ==="); // Log de début
+        logger.info("=== AuthHeadersFilter: Début du filtre ===");
+
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        System.out.println("Request URL: " + httpRequest.getRequestURL().toString()); // <-- Ajoute cette ligne
-        System.out.println("Request URI: " + httpRequest.getRequestURI()); // <-- Optionnel, pour plus de détails
+        logger.info("Request URL: " + httpRequest.getRequestURL().toString());
+        logger.info("Request URI: " + httpRequest.getRequestURI());
 
         // Lire les headers
         String username = httpRequest.getHeader("X-Auth-Username");
         String roles = httpRequest.getHeader("X-Auth-Roles");
-        System.out.println("X-Auth-Username: " + username); // Log des headers
-        System.out.println("X-Auth-Roles: " + roles);
+        logger.info("X-Auth-Username: " + username); // Log des headers
+        logger.info("X-Auth-Roles: " + roles);
 
         // Stocker dans un attribut de requête
         if (username != null) {
             httpRequest.setAttribute("userConnected", username);
             httpRequest.setAttribute("userRole", roles);
-            System.out.println("Attributs définis: userConnected=" + username + ", userRole=" + roles);
+            logger.info("Attributs définis: userConnected=" + username + ", userRole=" + roles);
         }
 
         // Continuer la chaîne de filtres
         chain.doFilter(request, response);
-        System.out.println("=== AuthHeadersFilter: Fin du filtre ==="); // Log de fin
+        logger.info("=== AuthHeadersFilter: Fin du filtre ===");
     }
 
 
