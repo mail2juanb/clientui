@@ -15,6 +15,12 @@
     <div class="container">
         <h1 class="mb-4 text-center">Liste des Patients</h1>
         <div class="row justify-content-center">
+            <!-- Bouton pour ajouter un nouveau patient -->
+            <div class="row justify-content-center mb-3">
+                <div class="col-auto">
+                    <a th:href="@{/add}" class="btn btn-success">Ajouter un patient</a>
+                </div>
+            </div>
             <div class="col-auto">
                 <table class="table table-bordered table-striped mx-auto w-auto">
                     <thead class="table-dark">

@@ -28,4 +28,6 @@ public interface MicroservicesProxy {
     @PostMapping(value = "/mnotes/notes")
     void addNote(@RequestBody NoteBean newNote);
 
+    @PostMapping(value = "/mpatient/patient")
+    void addPatient(@RequestBody PatientBean patient);
 }

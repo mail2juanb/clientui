@@ -195,12 +195,67 @@ public class ClientController {
 
         // Rediriger vers la page de mise à jour du patient
         return "redirect:/update/" + id;
-//        return "redirect:/clientui/update/" + id;
-//        return "forward:/clientui/update/" + id;
-//        return "update";
     }
 
 
+    // Méthode pour afficher le formulaire d'ajout d'un patient
+    @GetMapping("/add")
+    @NewSpan("clientui-patient-add-form")
+    public String showAddPatientForm(Model model) {
 
-    //TODO : Ajouter de nouveaux patients
+        Span currentSpan = tracer.currentSpan();
+        if (currentSpan != null) {
+            currentSpan.tag("page", "add-patient-form");
+            currentSpan.event("Affichage du formulaire d'ajout d'un patient");
+            logger.info("Affichage du formulaire d'ajout d'un patient - Span courant : traceId={}, spanId={}",
+                    currentSpan.context().traceId(),
+                    currentSpan.context().spanId());
+        } else {
+            logger.warn("Affichage du formulaire d'ajout d'un patient - Aucun span courant trouvé.");
+        }
+
+        // Ajouter un nouvel objet PatientBean vide pour le formulaire
+        model.addAttribute("patient", new PatientBean());
+        model.addAttribute("currentPage", "add");
+
+        return "add"; // Nom du template Thymeleaf pour le formulaire
+    }
+
+
+    // Méthode pour traiter la soumission du formulaire d'ajout d'un patient
+    @PostMapping("/add/addPatient")
+    @NewSpan("clientui-patient-add-submit")
+    public String addPatient(
+            @Valid @ModelAttribute("patient") PatientBean patient,
+            BindingResult result,
+            Model model) {
+
+        Span currentSpan = tracer.currentSpan();
+        if (currentSpan != null) {
+            currentSpan.tag("patient.lastname", patient.getLastname());
+            currentSpan.event("Soumission du formulaire d'ajout d'un patient");
+            logger.info("Soumission du formulaire d'ajout d'un patient - Span courant : traceId={}, spanId={}",
+                    currentSpan.context().traceId(),
+                    currentSpan.context().spanId());
+        } else {
+            logger.warn("Soumission du formulaire d'ajout d'un patient - Aucun span courant trouvé.");
+        }
+
+        // Gestion des erreurs de validation
+        if (result.hasErrors()) {
+            logger.warn("Erreurs de validation lors de l'ajout d'un patient");
+            result.getAllErrors().forEach(error -> {
+                logger.warn("Erreur de validation: {}", error.getDefaultMessage());
+            });
+            model.addAttribute("currentPage", "add");
+            return "add"; // Retourne au formulaire en cas d'erreur
+        }
+        // Appeler le microservice pour sauvegarder le patient
+        servicesProxy.addPatient(patient);
+        logger.info("Nouveau patient ajouté : {}", patient.getLastname());
+        // Rediriger vers la liste des patients
+        return "redirect:/patients";
+    }
+
+
 }
