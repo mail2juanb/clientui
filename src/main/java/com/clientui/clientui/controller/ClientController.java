@@ -6,15 +6,14 @@ import com.clientui.clientui.proxies.MicroservicesProxy;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.annotation.NewSpan;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,9 +121,16 @@ public class ClientController {
 
         // Logique métier
         model.addAttribute("currentPage", "update");
+
         // Récupération du patient
         final PatientBean patient = servicesProxy.retrievePatientId(id);
         model.addAttribute("patient", patient);
+
+        // Ajouter un objet newNote pour le formulaire
+        NoteBean newNote = new NoteBean();
+        newNote.setPatId(id);
+        newNote.setPatient(patient.getLastname());
+        model.addAttribute("newNote", newNote);
 
         // Récupération des notes avec gestion du cas null
         List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
@@ -137,6 +143,64 @@ public class ClientController {
 
         return "update";
     }
+
+
+    @PostMapping("/update/{id}/addnotes")
+    @NewSpan("clientui-patient-add-note")
+    public String addNote(
+            @PathVariable("id") Long id,
+            @Valid @ModelAttribute("newNote") NoteBean newNote,
+            BindingResult result,
+            Model model) {
+
+        logger.info("Méthode addNote appelée avec id = {}", id); // Log de début de méthode
+
+        Span currentSpan = tracer.currentSpan();
+        if (currentSpan != null) {
+            currentSpan.tag("patient.id", String.valueOf(id));
+            currentSpan.event("Ajout d'une note pour le patient ID : " + id);
+            logger.info("Ajout d'une note pour le patient ID : {} - Span courant : traceId={}, spanId={}",
+                    id,
+                    currentSpan.context().traceId(),
+                    currentSpan.context().spanId());
+        } else {
+            logger.warn("Ajout d'une note pour le patient ID : {} - Aucun span courant trouvé.", id);
+        }
+
+        // Assigner patId et patient à newNote
+        newNote.setPatId(id);
+        newNote.setPatient(servicesProxy.retrievePatientId(id).getLastname());
+
+
+        // Gestion des erreurs de validation
+        if (result.hasErrors()) {
+            logger.warn("Il y a des erreurs de validation lors de l'ajout d'une note");
+
+            // Afficher les erreurs de validation
+            result.getAllErrors().forEach(error -> {
+                logger.warn("Erreur de validation: {}", error.getDefaultMessage());
+            });
+
+            // Recharge les données nécessaires pour la vue
+            PatientBean patient = servicesProxy.retrievePatientId(id);
+            List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
+            model.addAttribute("patient", patient);
+            model.addAttribute("notes", notes);
+            return "update";
+        }
+
+        // Appeler le microservice mnotes pour sauvegarder la note
+        logger.info("Nouvelle note à sauvegarder -- patId = {} -- patient = {} -- note = {}", newNote.getPatId(), newNote.getPatient(), newNote.getNote());
+        servicesProxy.addNote(newNote);
+
+        // Rediriger vers la page de mise à jour du patient
+        return "redirect:/update/" + id;
+//        return "redirect:/clientui/update/" + id;
+//        return "forward:/clientui/update/" + id;
+//        return "update";
+    }
+
+
 
     //TODO : Ajouter de nouveaux patients
 }
