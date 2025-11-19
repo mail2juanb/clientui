@@ -13,33 +13,25 @@
 <!-- Corps principal -->
 <main class="flex-grow-1 py-4">
     <div class="container">
-        <h1 class="mb-4">Liste des Patients</h1>
-        <div class="row">
-            <div class="col-12">
-                <table class="table table-bordered table-striped">
+        <h1 class="mb-4 text-center">Liste des Patients</h1>
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <table class="table table-bordered table-striped mx-auto w-auto">
                     <thead class="table-dark">
                     <tr>
-<!--                        <th>Id</th>-->
                         <th>Nom</th>
                         <th>Prénom</th>
                         <th>Date de Naissance</th>
-<!--                        <th>Genre</th>-->
-<!--                        <th>Adresse</th>-->
-<!--                        <th>Téléphone</th>-->
                         <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     <th:block th:if="${not #lists.isEmpty(patients)}">
                         <tr th:each="patient : ${patients}">
-<!--                            <td style="width: 10%" th:text="${patient.id}"></td>-->
                             <td th:text="${patient.lastname}"></td>
                             <td th:text="${patient.firstname}"></td>
                             <td th:text="${patient.dateofbirth}"></td>
-<!--                            <td th:text="${patient.gender == 'M'} ? 'Homme' : (${patient.gender == 'F'} ? 'Femme' : ${patient.gender})"></td>-->
-<!--                            <td th:text="${patient.address}"></td>-->
-<!--                            <td th:text="${patient.phone}"></td>-->
-                            <td style="width: 15%" class="text-center">
+                            <td class="text-center">
                                 <a th:href="@{/update/{id}(id=${patient.id})}" class="btn btn-sm btn-outline-primary me-1">Editer</a>
                                 <a th:href="@{/delete/{id}(id=${patient.id})}" class="btn btn-sm btn-outline-danger">Supprimer</a>
                             </td>
@@ -47,7 +39,7 @@
                     </th:block>
                     <th:block th:unless="${not #lists.isEmpty(patients)}">
                         <tr>
-                            <td colspan="8" class="text-center">Aucun patient à afficher</td>
+                            <td colspan="4" class="text-center">Aucun patient à afficher</td>
                         </tr>
                     </th:block>
                     </tbody>
