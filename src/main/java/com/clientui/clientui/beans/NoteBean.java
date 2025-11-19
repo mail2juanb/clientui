@@ -1,18 +1,29 @@
 package com.clientui.clientui.beans;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
+
 public class NoteBean {
 
-    private String id;      // Identifiant unique généré par MongoDB (ObjectId mappé en String)
+    // private String id;      // Identifiant unique généré par MongoDB (ObjectId mappé en String)
+
+    @NotNull(message = "patId cannot be null")
+    @Positive(message = "patId must be a positive number")
     private Long patId;     // Clé de correspondance avec la base SQL
+
+    @NotBlank(message = "patient is mandatory")
     private String patient; // Nom du patient
+
+    @NotBlank(message = "note is mandatory")
     private String note;    // Champ texte pour la note (supporte les retours à la ligne)
 
     // Constructors
     public NoteBean() {
     }
 
-    public NoteBean(String id, Long patId, String patient, String note) {
-        this.id = id;
+    public NoteBean(Long patId, String patient, String note) {
         this.patId = patId;
         this.patient = patient;
         this.note = note;
@@ -20,13 +31,13 @@ public class NoteBean {
 
 
     // Getters Setters
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+//    public String getId() {
+//        return id;
+//    }
+//
+//    public void setId(String id) {
+//        this.id = id;
+//    }
 
     public Long getPatId() {
         return patId;
@@ -56,8 +67,7 @@ public class NoteBean {
     @Override
     public String toString() {
         return "NoteBean{" +
-                "id='" + id + '\'' +
-                ", patId=" + patId +
+                "patId=" + patId +
                 ", patient='" + patient + '\'' +
                 ", note='" + note + '\'' +
                 '}';
