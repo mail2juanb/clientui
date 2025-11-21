@@ -14,6 +14,12 @@
 <main class="flex-grow-1 py-4">
     <div class="container">
         <h1 class="mb-4 text-center">Ajouter un patient</h1>
+
+        <!-- Bloc pour afficher les erreurs -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <p th:text="${error}">Erreur : patient déjà existant.</p>
+        </div>
+
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <form th:action="@{/add/addPatient}" th:object="${patient}" method="post">

@@ -2,6 +2,7 @@ package com.clientui.clientui.controller;
 
 import com.clientui.clientui.beans.NoteBean;
 import com.clientui.clientui.beans.PatientBean;
+import com.clientui.clientui.exceptions.PatientDuplicateException;
 import com.clientui.clientui.proxies.MicroservicesProxy;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
@@ -250,12 +251,19 @@ public class ClientController {
             model.addAttribute("currentPage", "add");
             return "add"; // Retourne au formulaire en cas d'erreur
         }
-        // Appeler le microservice pour sauvegarder le patient
-        servicesProxy.addPatient(patient);
-        logger.info("Nouveau patient ajouté : {}", patient.getLastname());
-        // Rediriger vers la liste des patients
-        return "redirect:/patients";
-    }
 
+        // Appeler le microservice pour sauvegarder le patient - gestion de l'exception des doublons
+        // NOTE : La gestion de cette erreur ne doit elle pas etre geree au niveau du microservice mpatient ?
+        try {
+            servicesProxy.addPatient(patient);
+            logger.info("Nouveau patient ajouté : {}", patient.getLastname());
+            return "redirect:/patients";
+        } catch (PatientDuplicateException e) {
+            logger.info("Exception PatientDuplicateException interceptée : {}", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("currentPage", "add");
+            return "add"; // Retourne au formulaire avec le message d'erreur
+        }
+    }
 
 }
