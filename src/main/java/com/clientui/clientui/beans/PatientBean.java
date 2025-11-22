@@ -2,7 +2,7 @@ package com.clientui.clientui.beans;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Past;
 
 import java.time.LocalDate;
 
@@ -17,7 +17,7 @@ public class PatientBean {
     private String firstname;
 
     @NotNull(message = "dateofbirth is mandatory")
-    @PastOrPresent(message = "dateofbirth must be in the past")
+    @Past(message = "dateofbirth must be in the past")
     private LocalDate dateofbirth;
 
     @NotBlank(message = "gender is mandatory")

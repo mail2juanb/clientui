@@ -125,6 +125,7 @@ public class ClientController {
 
         // Récupération du patient
         final PatientBean patient = servicesProxy.retrievePatientId(id);
+        logger.info("Patient id = {}, dateOfBirth = {}, type: {}", patient.getId(), patient.getDateofbirth(), patient.getDateofbirth().getClass());
         model.addAttribute("patient", patient);
 
         // Ajouter un objet newNote pour le formulaire
@@ -265,5 +266,50 @@ public class ClientController {
             return "add"; // Retourne au formulaire avec le message d'erreur
         }
     }
+
+
+    @PostMapping("/update/{id}/updatepatient")
+    @NewSpan("clientui-patient-update-submit")
+    public String updatePatient(
+            @PathVariable("id") Long id,
+            @Valid @ModelAttribute("patient") PatientBean patient,
+            BindingResult result,
+            Model model) {
+
+        Span currentSpan = tracer.currentSpan();
+        if (currentSpan != null) {
+            currentSpan.tag("patient.id", String.valueOf(id));
+            currentSpan.event("Soumission du formulaire de mise à jour du patient ID : " + id);
+            logger.info("Soumission du formulaire de mise à jour du patient ID : {} - Span courant : traceId={}, spanId={}",
+                    id,
+                    currentSpan.context().traceId(),
+                    currentSpan.context().spanId());
+        } else {
+            logger.warn("Soumission du formulaire de mise à jour du patient ID : {} - Aucun span courant trouvé.", id);
+        }
+
+        // Gestion des erreurs de validation
+        if (result.hasErrors()) {
+            logger.warn("Erreurs de validation lors de la mise à jour du patient ID : {}", id);
+            result.getAllErrors().forEach(error -> {
+                logger.warn("Erreur de validation: {}", error.getDefaultMessage());
+            });
+
+            // Recharge les données nécessaires pour la vue
+            PatientBean existingPatient = servicesProxy.retrievePatientId(id);
+            List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
+            model.addAttribute("patient", existingPatient);
+            model.addAttribute("notes", notes);
+            return "update";
+        }
+
+        // Mise à jour du patient via le microservice
+        servicesProxy.updatePatient(id, patient);
+        logger.info("Patient mis à jour avec succès : ID = {}", id);
+
+        // Redirection vers la page de mise à jour du patient
+        return "redirect:/update/" + id;
+    }
+
 
 }

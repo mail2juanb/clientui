@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>MicroDiab - Patient Details</title>
@@ -21,29 +21,31 @@
                 <span th:text="${patient.id}" class="text-danger"></span>
             </h1>
         </div>
+
         <!-- Section : Informations du patient -->
         <div class="row mb-4">
             <h2>Patient Information</h2>
-            <form action="#" th:action="@{/update/{id}(id=${patient.id})}" th:object="${patient}" method="post" class="w-100">
+            <form th:action="@{/update/{id}/updatepatient(id=${patient.id})}" th:object="${patient}" method="post" class="w-100">
+
                 <!-- Champs du formulaire -->
                 <div class="mb-3 row">
                     <label for="lastname" class="col-sm-2 col-form-label">Lastname</label>
                     <div class="col-sm-10">
-                        <input type="text" th:field="*{lastname}" id="lastname" placeholder="Lastname" class="form-control w-50">
+                        <input type="text" th:field="*{lastname}" id="lastname" placeholder="Lastname" class="form-control w-50" required>
                         <p class="text-danger" th:if="${#fields.hasErrors('lastname')}" th:errors="*{lastname}"></p>
                     </div>
                 </div>
                 <div class="mb-3 row">
                     <label for="firstname" class="col-sm-2 col-form-label">Firstname</label>
                     <div class="col-sm-10">
-                        <input type="text" th:field="*{firstname}" id="firstname" placeholder="Firstname" class="form-control w-50">
+                        <input type="text" th:field="*{firstname}" id="firstname" placeholder="Firstname" class="form-control w-50" required>
                         <p class="text-danger" th:if="${#fields.hasErrors('firstname')}" th:errors="*{firstname}"></p>
                     </div>
                 </div>
                 <div class="mb-3 row">
                     <label for="dateofbirth" class="col-sm-2 col-form-label">Date of Birth</label>
                     <div class="col-sm-10">
-                        <input type="date" th:value="${#temporals.format(patient.dateofbirth, 'yyyy-MM-dd')}" id="dateofbirth" class="form-control w-50">
+                        <input type="date" th:field="*{dateofbirth}" id="dateofbirth" class="form-control w-50" required>
                         <p class="text-danger" th:if="${#fields.hasErrors('dateofbirth')}" th:errors="*{dateofbirth}"></p>
                     </div>
                 </div>
@@ -72,18 +74,22 @@
                         <p class="text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
                     </div>
                 </div>
+
                 <!-- Boutons -->
                 <div class="mb-3 row">
                     <div class="col-sm-12 d-flex gap-2">
+                        <!-- Champ caché pour patId -->
                         <input type="hidden" th:field="*{id}">
                         <input class="btn btn-primary" type="submit" value="Update">
                     </div>
                 </div>
             </form>
         </div>
+
         <!-- Section : Notes -->
         <div class="row mt-4">
             <h2>Notes</h2>
+
             <!-- Sous-section : Ajouter une note -->
             <div class="mb-4">
                 <h4>Add Note</h4>
@@ -94,7 +100,7 @@
                     <input type="hidden" th:field="*{patient}" />
                     <div class="mb-3 row">
                         <div class="col-sm-10">
-                            <textarea class="form-control w-50" th:field="*{note}" rows="3" placeholder="Enter note here..."></textarea>
+                            <textarea class="form-control w-100" th:field="*{note}" rows="3" placeholder="Enter note here..."></textarea>
                             <p class="text-danger" th:if="${#fields.hasErrors('note')}" th:errors="*{note}"></p>
                         </div>
                     </div>
@@ -105,12 +111,13 @@
                     </div>
                 </form>
             </div>
+
             <!-- Sous-section : Notes précédentes -->
             <div>
                 <h4>Previous Notes</h4>
                 <div th:if="${not #lists.isEmpty(notes)}">
-                    <ul class="list-group w-50">
-                        <li th:each="note : ${notes}" class="list-group-item" th:text="'Undefined Date - ' + ${note.note}"></li>
+                    <ul class="list-group w-100">
+                        <li th:each="note : ${notes}" class="list-group-item" style="white-space: pre-line;" th:text="'Undefined Date - ' + ${note.note}"></li>
                     </ul>
                 </div>
                 <div th:if="${#lists.isEmpty(notes)}" class="alert alert-info w-50">
