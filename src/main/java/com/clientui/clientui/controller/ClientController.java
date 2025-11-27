@@ -2,8 +2,10 @@ package com.clientui.clientui.controller;
 
 import com.clientui.clientui.beans.NoteBean;
 import com.clientui.clientui.beans.PatientBean;
+import com.clientui.clientui.beans.RiskLevelBean;
 import com.clientui.clientui.exceptions.PatientDuplicateException;
 import com.clientui.clientui.proxies.MicroservicesProxy;
+import feign.FeignException;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.annotation.NewSpan;
@@ -142,6 +144,11 @@ public class ClientController {
             logger.warn("Aucune note trouvée pour le patient ID : {}. Liste vide initialisée.", id);
         }
         model.addAttribute("notes", notes);
+
+        // Récupération du RiskLevel depuis mRisk
+        RiskLevelBean riskLevel = servicesProxy.getRiskLevel(id);
+        logger.info("Risk Level = {}", riskLevel.getRiskLevel());
+        model.addAttribute("riskLevel", riskLevel.getRiskLevel());
 
         return "update";
     }

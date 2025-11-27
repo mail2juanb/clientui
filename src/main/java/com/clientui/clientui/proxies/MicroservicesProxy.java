@@ -2,6 +2,7 @@ package com.clientui.clientui.proxies;
 
 import com.clientui.clientui.beans.NoteBean;
 import com.clientui.clientui.beans.PatientBean;
+import com.clientui.clientui.beans.RiskLevelBean;
 import com.clientui.clientui.configuration.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -30,5 +31,8 @@ public interface MicroservicesProxy {
 
     @PostMapping(value = "/mnotes/notes")
     void addNote(@RequestBody NoteBean newNote);
+
+    @GetMapping("/mrisk/risk/{patId}")
+    RiskLevelBean getRiskLevel(@PathVariable("patId") Long patId);
 
 }

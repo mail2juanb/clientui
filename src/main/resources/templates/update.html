@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>MicroDiab - Patient Details</title>
@@ -84,6 +84,21 @@
                     </div>
                 </div>
             </form>
+        </div>
+
+        <!-- Section : Risk Level -->
+        <div class="row mt-4">
+            <h2>Risk Level</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3 row">
+                        <label for="riskLevel" class="col-sm-2 col-form-label">Current Risk Level</label>
+                        <div class="col-sm-10">
+                            <input type="text" id="riskLevel" class="form-control w-50" th:value="${riskLevel}" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Section : Notes -->

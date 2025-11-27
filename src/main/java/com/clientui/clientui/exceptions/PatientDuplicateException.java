@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.CONFLICT)
 public class PatientDuplicateException extends RuntimeException {
+
     private static final Logger log = LoggerFactory.getLogger(PatientDuplicateException.class);
 
     public PatientDuplicateException(String message) {
