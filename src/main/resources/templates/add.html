@@ -15,9 +15,9 @@
     <div class="container">
         <h1 class="mb-4 text-center">Ajouter un patient</h1>
 
-        <!-- Bloc pour afficher les erreurs -->
+        <!-- Bloc pour afficher les erreurs globales -->
         <div th:if="${error}" class="alert alert-danger" role="alert">
-            <p th:text="${error}">Erreur : patient déjà existant.</p>
+            <p th:text="${error}">An error has occurred.</p>
         </div>
 
         <div class="row justify-content-center">
@@ -25,24 +25,27 @@
                 <form th:action="@{/add/addPatient}" th:object="${patient}" method="post">
                     <div class="mb-3">
                         <label for="lastname" class="form-label">Nom</label>
-                        <input type="text" class="form-control" id="lastname" th:field="*{lastname}" required>
+                        <input type="text" class="form-control" id="lastname" th:field="*{lastname}">
+                        <span th:if="${errors != null && errors.containsKey('lastname')}" class="text-danger" th:text="${errors['lastname']}"></span>
                     </div>
                     <div class="mb-3">
                         <label for="firstname" class="form-label">Prénom</label>
-                        <input type="text" class="form-control" id="firstname" th:field="*{firstname}" required>
+                        <input type="text" class="form-control" id="firstname" th:field="*{firstname}">
+                        <span th:if="${errors != null && errors.containsKey('firstname')}" class="text-danger" th:text="${errors['firstname']}"></span>
                     </div>
                     <div class="mb-3">
                         <label for="dateofbirth" class="form-label">Date de naissance</label>
-                        <input type="date" class="form-control" id="dateofbirth" th:field="*{dateofbirth}" required>
+                        <input type="date" class="form-control" id="dateofbirth" th:field="*{dateofbirth}">
+                        <span th:if="${errors != null && errors.containsKey('dateofbirth')}" class="text-danger" th:text="${errors['dateofbirth']}"></span>
                     </div>
                     <div class="mb-3">
                         <label for="gender" class="form-label">Genre</label>
-                        <select th:field="*{gender}" id="gender" class="form-select" required>
+                        <select th:field="*{gender}" id="gender" class="form-select">
                             <option value="" disabled selected>Sélectionnez un genre</option>
                             <option value="M">Homme</option>
                             <option value="F">Femme</option>
                         </select>
-                        <p class="text-danger" th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}"></p>
+                        <span th:if="${errors != null && errors.containsKey('gender')}" class="text-danger" th:text="${errors['gender']}"></span>
                     </div>
                     <div class="mb-3">
                         <label for="address" class="form-label">Adresse</label>

@@ -10,17 +10,17 @@ public class PatientBean {
 
     private Long id;
 
-    @NotBlank(message = "lastname is mandatory")
+    //@NotBlank(message = "lastname is mandatory")
     private String lastname;
 
-    @NotBlank(message = "firstname is mandatory")
+    //@NotBlank(message = "firstname is mandatory")
     private String firstname;
 
-    @NotNull(message = "dateofbirth is mandatory")
-    @Past(message = "dateofbirth must be in the past")
+    //@NotNull(message = "dateofbirth is mandatory")
+    //@Past(message = "dateofbirth must be in the past")
     private LocalDate dateofbirth;
 
-    @NotBlank(message = "gender is mandatory")
+    //@NotBlank(message = "gender is mandatory")
     private String gender;
 
     private String address;

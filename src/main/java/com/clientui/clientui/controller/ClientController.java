@@ -3,12 +3,11 @@ package com.clientui.clientui.controller;
 import com.clientui.clientui.beans.NoteBean;
 import com.clientui.clientui.beans.PatientBean;
 import com.clientui.clientui.beans.RiskLevelBean;
-import com.clientui.clientui.exceptions.PatientDuplicateException;
 import com.clientui.clientui.proxies.MicroservicesProxy;
-import feign.FeignException;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.annotation.NewSpan;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 @Controller
 public class ClientController {
@@ -234,10 +234,7 @@ public class ClientController {
     // Méthode pour traiter la soumission du formulaire d'ajout d'un patient
     @PostMapping("/add/addPatient")
     @NewSpan("clientui-patient-add-submit")
-    public String addPatient(
-            @Valid @ModelAttribute("patient") PatientBean patient,
-            BindingResult result,
-            Model model) {
+    public String addPatient(@ModelAttribute("patient") PatientBean patient, Model model, HttpServletRequest request) {
 
         Span currentSpan = tracer.currentSpan();
         if (currentSpan != null) {
@@ -250,28 +247,16 @@ public class ClientController {
             logger.warn("Soumission du formulaire d'ajout d'un patient - Aucun span courant trouvé.");
         }
 
-        // Gestion des erreurs de validation
-        if (result.hasErrors()) {
-            logger.warn("Erreurs de validation lors de l'ajout d'un patient");
-            result.getAllErrors().forEach(error -> {
-                logger.warn("Erreur de validation: {}", error.getDefaultMessage());
-            });
-            model.addAttribute("currentPage", "add");
-            return "add"; // Retourne au formulaire en cas d'erreur
-        }
+        // NOTE : Pour conserver ce que l'utilisateur a renseigné.
+        request.setAttribute("patient", patient);
 
-        // Appeler le microservice pour sauvegarder le patient - gestion de l'exception des doublons
-        // NOTE : La gestion de cette erreur ne doit elle pas etre geree au niveau du microservice mpatient ?
-        try {
-            servicesProxy.addPatient(patient);
-            logger.info("Nouveau patient ajouté : {}", patient.getLastname());
-            return "redirect:/patients";
-        } catch (PatientDuplicateException e) {
-            logger.info("Exception PatientDuplicateException interceptée : {}", e.getMessage());
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("currentPage", "add");
-            return "add"; // Retourne au formulaire avec le message d'erreur
-        }
+        /* NOTE :Gestion des erreurs de validation via le FeignExceptionHandler.
+        Elles sont levées par le microservice back concerné. */
+
+        servicesProxy.addPatient(patient);
+        logger.info("Nouveau patient ajouté : {}", patient.getLastname());
+
+        return "redirect:/patients";
     }
 
 

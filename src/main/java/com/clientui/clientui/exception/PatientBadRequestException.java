@@ -1,4 +1,4 @@
-package com.clientui.clientui.exceptions;
+package com.clientui.clientui.exception;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
