@@ -25,6 +25,7 @@ public class SecurityConfig {
                                 "/images/**",    // Images
                                 "/favicon.ico"   // Favicon
                         ).permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
