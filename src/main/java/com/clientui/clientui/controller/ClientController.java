@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,7 +161,8 @@ public class ClientController {
             @PathVariable("id") Long id,
             @Valid @ModelAttribute("newNote") NoteBean newNote,
             BindingResult result,
-            Model model) {
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
         logger.info("Méthode addNote appelée avec id = {}", id); // Log de début de méthode
 
@@ -202,6 +204,8 @@ public class ClientController {
         logger.info("Nouvelle note à sauvegarder -- patId = {} -- patient = {} -- note = {}", newNote.getPatId(), newNote.getPatient(), newNote.getNote());
         servicesProxy.addNote(newNote);
 
+        redirectAttributes.addFlashAttribute("success", "Note ajoutée avec succès !");
+
         // Rediriger vers la page de mise à jour du patient
         return "redirect:/update/" + id;
     }
@@ -234,7 +238,7 @@ public class ClientController {
     // Méthode pour traiter la soumission du formulaire d'ajout d'un patient
     @PostMapping("/add/addPatient")
     @NewSpan("clientui-patient-add-submit")
-    public String addPatient(@ModelAttribute("patient") PatientBean patient, Model model, HttpServletRequest request) {
+    public String addPatient(@ModelAttribute("patient") PatientBean patient, Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) {
 
         Span currentSpan = tracer.currentSpan();
         if (currentSpan != null) {
@@ -250,11 +254,16 @@ public class ClientController {
         // NOTE : Pour conserver ce que l'utilisateur a renseigné.
         request.setAttribute("patient", patient);
 
+        // Ajoute le nom de la vue dans les attributs de la requête
+        request.setAttribute("targetView", "add");
+
         /* NOTE :Gestion des erreurs de validation via le FeignExceptionHandler.
         Elles sont levées par le microservice back concerné. */
 
         servicesProxy.addPatient(patient);
         logger.info("Nouveau patient ajouté : {}", patient.getLastname());
+
+        redirectAttributes.addFlashAttribute("success", "Patient ajouté avec succès !");
 
         return "redirect:/patients";
     }
@@ -262,11 +271,8 @@ public class ClientController {
 
     @PostMapping("/update/{id}/updatepatient")
     @NewSpan("clientui-patient-update-submit")
-    public String updatePatient(
-            @PathVariable("id") Long id,
-            @Valid @ModelAttribute("patient") PatientBean patient,
-            BindingResult result,
-            Model model) {
+    public String updatePatient(@PathVariable("id") Long id, @ModelAttribute("patient") PatientBean patient,
+                                HttpServletRequest request, RedirectAttributes redirectAttributes) {
 
         Span currentSpan = tracer.currentSpan();
         if (currentSpan != null) {
@@ -280,24 +286,21 @@ public class ClientController {
             logger.warn("Soumission du formulaire de mise à jour du patient ID : {} - Aucun span courant trouvé.", id);
         }
 
-        // Gestion des erreurs de validation
-        if (result.hasErrors()) {
-            logger.warn("Erreurs de validation lors de la mise à jour du patient ID : {}", id);
-            result.getAllErrors().forEach(error -> {
-                logger.warn("Erreur de validation: {}", error.getDefaultMessage());
-            });
+        // NOTE : Pour conserver ce que l'utilisateur a renseigné.
+        patient.setId(id);      // Force l'id du patient depuis le PathVariable
+        request.setAttribute("patient", patient);
 
-            // Recharge les données nécessaires pour la vue
-            PatientBean existingPatient = servicesProxy.retrievePatientId(id);
-            List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
-            model.addAttribute("patient", existingPatient);
-            model.addAttribute("notes", notes);
-            return "update";
-        }
+        // Ajoute le nom de la vue dans les attributs de la requête
+        request.setAttribute("targetView", "update");
+
+        /* NOTE :Gestion des erreurs de validation via le FeignExceptionHandler.
+        Elles sont levées par le microservice back concerné. */
 
         // Mise à jour du patient via le microservice
         servicesProxy.updatePatient(id, patient);
         logger.info("Patient mis à jour avec succès : ID = {}", id);
+
+        redirectAttributes.addFlashAttribute("success", "Patient ajouté avec succès !");
 
         // Redirection vers la page de mise à jour du patient
         return "redirect:/update/" + id;

@@ -22,31 +22,42 @@
             </h1>
         </div>
 
+        <!-- Bloc pour afficher les erreurs globales -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <p th:text="${error}">An error has occurred.</p>
+        </div>
+
+        <!-- Bloc pour afficher les success -->
+        <div th:if="${success}" class="alert alert-success" role="alert">
+            <p th:text="${success}">Success - nice...</p>
+        </div>
+
         <!-- Section : Informations du patient -->
         <div class="row mb-4">
             <h2>Patient Information</h2>
-            <form th:action="@{/update/{id}/updatepatient(id=${patient.id})}" th:object="${patient}" method="post" class="w-100">
+            <form th:action="@{/update/{id}/updatepatient(id=${id})}" th:object="${patient}" method="post" class="w-100">
+<!--                <form th:action="@{/update/{id}/updatepatient(id=${patient.id})}" th:object="${patient}" method="post" class="w-100">-->
 
                 <!-- Champs du formulaire -->
                 <div class="mb-3 row">
                     <label for="lastname" class="col-sm-2 col-form-label">Lastname</label>
                     <div class="col-sm-10">
-                        <input type="text" th:field="*{lastname}" id="lastname" placeholder="Lastname" class="form-control w-50" required>
-                        <p class="text-danger" th:if="${#fields.hasErrors('lastname')}" th:errors="*{lastname}"></p>
+                        <input type="text" th:field="*{lastname}" id="lastname" placeholder="Lastname" class="form-control w-50">
+                        <span th:if="${errors != null && errors.containsKey('lastname')}" class="text-danger" th:text="${errors['lastname']}"></span>
                     </div>
                 </div>
                 <div class="mb-3 row">
                     <label for="firstname" class="col-sm-2 col-form-label">Firstname</label>
                     <div class="col-sm-10">
-                        <input type="text" th:field="*{firstname}" id="firstname" placeholder="Firstname" class="form-control w-50" required>
-                        <p class="text-danger" th:if="${#fields.hasErrors('firstname')}" th:errors="*{firstname}"></p>
+                        <input type="text" th:field="*{firstname}" id="firstname" placeholder="Firstname" class="form-control w-50">
+                        <span th:if="${errors != null && errors.containsKey('firstname')}" class="text-danger" th:text="${errors['firstname']}"></span>
                     </div>
                 </div>
                 <div class="mb-3 row">
                     <label for="dateofbirth" class="col-sm-2 col-form-label">Date of Birth</label>
                     <div class="col-sm-10">
-                        <input type="date" th:field="*{dateofbirth}" id="dateofbirth" class="form-control w-50" required>
-                        <p class="text-danger" th:if="${#fields.hasErrors('dateofbirth')}" th:errors="*{dateofbirth}"></p>
+                        <input type="date" th:field="*{dateofbirth}" id="dateofbirth" class="form-control w-50">
+                        <span th:if="${errors != null && errors.containsKey('dateofbirth')}" class="text-danger" th:text="${errors['dateofbirth']}"></span>
                     </div>
                 </div>
                 <div class="mb-3 row">
@@ -57,21 +68,19 @@
                             <option value="M">Male</option>
                             <option value="F">Female</option>
                         </select>
-                        <p class="text-danger" th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}"></p>
+                        <span th:if="${errors != null && errors.containsKey('gender')}" class="text-danger" th:text="${errors['gender']}"></span>
                     </div>
                 </div>
                 <div class="mb-3 row">
                     <label for="address" class="col-sm-2 col-form-label">Address</label>
                     <div class="col-sm-10">
                         <input type="text" th:field="*{address}" id="address" placeholder="Address" class="form-control w-50">
-                        <p class="text-danger" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></p>
                     </div>
                 </div>
                 <div class="mb-3 row">
                     <label for="phone" class="col-sm-2 col-form-label">Phone</label>
                     <div class="col-sm-10">
                         <input type="text" th:field="*{phone}" id="phone" placeholder="Phone" class="form-control w-50">
-                        <p class="text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
                     </div>
                 </div>
 
@@ -79,7 +88,7 @@
                 <div class="mb-3 row">
                     <div class="col-sm-12 d-flex gap-2">
                         <!-- Champ caché pour patId -->
-                        <input type="hidden" th:field="*{id}">
+                        <input type="hidden" name="id" th:value="${patient.id}">
                         <input class="btn btn-primary" type="submit" value="Update">
                     </div>
                 </div>

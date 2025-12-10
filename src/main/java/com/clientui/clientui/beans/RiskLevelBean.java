@@ -21,19 +21,19 @@ public class RiskLevelBean {
         return riskLevel;
     }
 
-    // NOTE : Pas besoin de setter puisqu'on ne fait que lire les données, jamais les modifier
-//    public void setRiskLevel(String riskLevel) {
-//        this.riskLevel = riskLevel;
-//    }
+    // NOTE : Pas besoin de setter puisqu'on ne fait que lire les données, jamais les modifier, ben en fait si
+    public void setRiskLevel(String riskLevel) {
+        this.riskLevel = riskLevel;
+    }
 
     public Long getPatId() {
         return patId;
     }
 
-    // NOTE : Pas besoin de setter puisqu'on ne fait que lire les données, jamais les modifier
-//    public void setPatId(Long patId) {
-//        this.patId = patId;
-//    }
+    // NOTE : Pas besoin de setter puisqu'on ne fait que lire les données, jamais les modifier, ben en fait si
+    public void setPatId(Long patId) {
+        this.patId = patId;
+    }
 
 
 

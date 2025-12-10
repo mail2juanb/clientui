@@ -12,6 +12,17 @@
 
 <!-- Corps principal -->
 <main class="flex-grow-1 py-4">
+
+    <!-- Bloc pour afficher les erreurs globales -->
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <p th:text="${error}">An error has occurred.</p>
+    </div>
+
+    <!-- Bloc pour afficher les success -->
+    <div th:if="${success}" class="alert alert-success" role="alert">
+        <p th:text="${success}">Success - nice...</p>
+    </div>
+
     <div class="container">
         <h1 class="mb-4 text-center">Liste des Patients</h1>
         <div class="row justify-content-center">

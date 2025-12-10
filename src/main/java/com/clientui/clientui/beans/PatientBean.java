@@ -34,7 +34,7 @@ public class PatientBean {
 
     // Constructeur avec tous les arguments
     public PatientBean(String lastname, String firstname, LocalDate dateofbirth, String gender, String address, String phone) {
-        //this.id = id;
+        this.id = id;
         this.lastname = lastname;
         this.firstname = firstname;
         this.dateofbirth = dateofbirth;
@@ -48,9 +48,9 @@ public class PatientBean {
         return id;
     }
 
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getLastname() {
         return lastname;
