@@ -80,7 +80,7 @@ public class ClientController {
 
     @RequestMapping("/patients")
     @NewSpan("clientui-patients-list")
-    public String showPatients(Model model) {
+    public String showPatients(Model model, @RequestParam(required = false) String error) {
 
         Span currentSpan = tracer.currentSpan();
         if (currentSpan != null) {
@@ -97,6 +97,11 @@ public class ClientController {
         // Implémenté automatiquement via addUserInfoToModel - @ModemAttribute
 //        model.addAttribute("userConnected", username);
 //        model.addAttribute("userRole", roles);
+
+        // Affichage des erreurs générales du handler lors des add ou update patient
+        if (error != null) {
+            model.addAttribute("error", error);
+        }
 
         // Logique métier
         model.addAttribute("currentPage", "patients");
