@@ -20,6 +20,9 @@
                     <a th:if="${currentPage != 'patients' and currentPage != 'home'}" th:href="@{/patients}" class="btn btn-outline-light btn-sm">
                         Liste des Patients
                     </a>
+                    <a th:if="${currentPage == 'patients'}" th:href="@{/clientui/home}" class="btn btn-outline-light btn-sm">
+                        Home
+                    </a>
                 </div>
                 <!-- Partie droite : Utilisateur + Déconnexion -->
                 <div class="col-md-6 text-md-end text-center">
