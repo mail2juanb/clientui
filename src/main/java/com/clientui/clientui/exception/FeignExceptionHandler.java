@@ -33,8 +33,7 @@ public class FeignExceptionHandler {
 
     @ExceptionHandler(FeignException.class)
     public ModelAndView handleFeignException(FeignException e, HttpServletRequest request) {
-
-        logger.warn("FeignException interceptée globalement : status={}", e.status());
+        logger.warn("FeignException interceptée : status={}, URI={}", e.status(), request.getRequestURI());
 
         // Récupère l'ID du patient depuis la requête
         final PatientBean requestPatient = (PatientBean) request.getAttribute("patient");
@@ -64,7 +63,7 @@ public class FeignExceptionHandler {
                 notes = servicesProxy.retrieveNotesPatId(patientId);
                 riskLevel = servicesProxy.getRiskLevel(patientId);
             } catch (FeignException ex) {
-                logger.error("Erreur lors de la récupération des données pour le patient ID {} : {}", patientId, ex.getMessage());
+                logger.error("Erreur Feign lors de la récupération des données pour le patient {} : {}", patientId, ex.contentUTF8());
                 // Redirige vers la liste des patients en cas d'erreur
                 ModelAndView mav = new ModelAndView("redirect:/patients");
                 mav.addObject("error", "Erreur lors de la récupération des données du patient : " + ex.getMessage());
