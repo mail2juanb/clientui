@@ -50,7 +50,6 @@
                             <td th:text="${patient.dateofbirth}"></td>
                             <td class="text-center">
                                 <a th:href="@{/update/{id}(id=${patient.id})}" class="btn btn-sm btn-outline-primary me-1">Editer</a>
-                                <a th:href="@{/delete/{id}(id=${patient.id})}" class="btn btn-sm btn-outline-danger">Supprimer</a>
                             </td>
                         </tr>
                     </th:block>
