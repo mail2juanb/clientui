@@ -4,6 +4,7 @@ import com.clientui.clientui.beans.NoteBean;
 import com.clientui.clientui.beans.PatientBean;
 import com.clientui.clientui.beans.RiskLevelBean;
 import com.clientui.clientui.proxies.MicroservicesProxy;
+import feign.FeignException;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.annotation.NewSpan;
@@ -21,52 +22,82 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Controller class for handling client-side requests in the MicroDiab application.
+ * This class manages the interaction between the frontend (Thymeleaf templates) and the backend microservices.
+ * It provides endpoints for displaying patient lists, updating patient information, adding new patients,
+ * and managing patient notes. It also integrates with Spring Security for user authentication and role management.
+ *
+ * <p>This controller uses Feign clients to communicate with other microservices (e.g., mPatient, mNotes, mRisk)
+ * and leverages Spring's tracing capabilities for monitoring and debugging purposes.
+ *
+ * @see com.clientui.clientui.beans.PatientBean
+ * @see com.clientui.clientui.beans.NoteBean
+ * @see com.clientui.clientui.beans.RiskLevelBean
+ * @see com.clientui.clientui.proxies.MicroservicesProxy
+ */
 @Controller
 public class ClientController {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientController.class);
 
-    @Autowired
+    @Autowired(required = false)
     private Tracer tracer;
 
     private final MicroservicesProxy servicesProxy;
 
+    /**
+     * Constructs a new ClientController with the specified MicroservicesProxy.
+     *
+     * @param servicesProxy The proxy used to communicate with backend microservices.
+     */
     public ClientController(MicroservicesProxy servicesProxy) {
         this.servicesProxy = servicesProxy;
     }
 
-    // Méthode pour ajouter automatiquement userConnected et userRole à chaque modèle
+    /**
+     * Adds user information (username and roles) to the model for every request.
+     * This method is automatically invoked by Spring MVC before any handler method is called.
+     *
+     * @param username The username extracted from the request header.
+     * @param roles    The roles extracted from the request header.
+     * @param model    The model to which user information is added.
+     */
     @ModelAttribute
     public void addUserInfoToModel(
-            @RequestHeader(value = "X-Auth-Username", required = false, defaultValue = "PasDeUsername") String username,
-            @RequestHeader(value = "X-Auth-Roles", required = false, defaultValue = "PasDeRole") String roles,
+            @RequestHeader(value = "X-Auth-Username", required = false, defaultValue = "None_Username") String username,
+            @RequestHeader(value = "X-Auth-Roles", required = false, defaultValue = "None_Role") String roles,
             Model model) {
         model.addAttribute("userConnected", username);
         model.addAttribute("userRole", roles);
     }
 
-
+    /**
+     * Displays the home page of the application.
+     *
+     * @param username The username extracted from the request header.
+     * @param roles    The roles extracted from the request header.
+     * @param model    The model to which attributes are added.
+     * @return The name of the Thymeleaf template for the home page.
+     */
     @RequestMapping("/home")
     @NewSpan("clientui-home-display")
     public String showHomes(
-            @RequestHeader(value = "X-Auth-Username", required = false, defaultValue = "PasDeUsername") String username,
-            @RequestHeader(value = "X-Auth-Roles", required = false, defaultValue = "PasDeRole") String roles,
+            @RequestHeader(value = "X-Auth-Username", required = false, defaultValue = "None_Username") String username,
+            @RequestHeader(value = "X-Auth-Roles", required = false, defaultValue = "None_Username") String roles,
             Model model) {
 
         // Récupère le span courant (créé automatiquement par @NewSpan)
-        Span currentSpan = tracer.currentSpan();
+        //Span currentSpan = tracer.currentSpan();
+        Span currentSpan = currentSpanOrNull();
         if (currentSpan != null) {
             // Ajoute des tags personnalisés
             currentSpan.tag("user.name", username);
             currentSpan.tag("user.roles", roles);
             currentSpan.tag("page", "home");
-            currentSpan.event("Rendu de la page home pour l'utilisateur : " + username + " - Role : " + roles);
-            logger.info("Rendu de la page home - Span courant : traceId={}, spanId={}",
-                    currentSpan.context().traceId(),
-                    currentSpan.context().spanId());
+            currentSpan.event("Rendering of the home page for the user: " + username + " - Role : " + roles);
         } else {
-            logger.warn("Rendu de la page home - Aucun span courant trouvé pour la méthode showHomes.");
+            logger.warn("Home page rendering - No current span found for the showHomes method.");
         }
 
             // Logique métier
@@ -77,26 +108,24 @@ public class ClientController {
             return "home";
     }
 
-
+    /**
+     * Displays the list of patients.
+     *
+     * @param model The model to which attributes are added.
+     * @param error An optional error message to display.
+     * @return The name of the Thymeleaf template for the patient list page.
+     */
     @RequestMapping("/patients")
     @NewSpan("clientui-patients-list")
     public String showPatients(Model model, @RequestParam(required = false) String error) {
-
-        Span currentSpan = tracer.currentSpan();
+        //Span currentSpan = tracer.currentSpan();
+        Span currentSpan = currentSpanOrNull();
         if (currentSpan != null) {
             currentSpan.tag("page", "patients-list");
-            currentSpan.event("Récupération de la liste des patients");
-            logger.info("Rendu de la page liste des patients - Span courant : traceId={}, spanId={}",
-                    currentSpan.context().traceId(),
-                    currentSpan.context().spanId());
+            currentSpan.event("Retrieving the patient list");
         } else {
-            logger.warn("Rendu de la page liste des patients - Aucun span courant trouvé pour la méthode showPatients.");
+            logger.warn("Patient list page rendering - No current span found for the showPatients method.");
         }
-
-        // Ajout des attributs pour le template
-        // Implémenté automatiquement via addUserInfoToModel - @ModemAttribute
-//        model.addAttribute("userConnected", username);
-//        model.addAttribute("userRole", roles);
 
         // Affichage des erreurs générales du handler lors des add ou update patient
         if (error != null) {
@@ -105,27 +134,28 @@ public class ClientController {
 
         // Logique métier
         model.addAttribute("currentPage", "patients");
-        List<PatientBean> patients = servicesProxy.retrievePatientList();;
+        List<PatientBean> patients = servicesProxy.retrievePatientList();
         model.addAttribute("patients", patients);
 
         return "list";
     }
 
-
+    /**
+     * Displays the form for updating a patient's information.
+     *
+     * @param id    The ID of the patient to update.
+     * @param model The model to which attributes are added.
+     * @return The name of the Thymeleaf template for the update form.
+     */
     @RequestMapping("/update/{id}")
     @NewSpan("clientui-patient-update-form")
     public String showUpdateForm(@PathVariable("id") Long id, Model model) {
-
-        Span currentSpan = tracer.currentSpan();
+        Span currentSpan = currentSpanOrNull();
         if (currentSpan != null) {
             currentSpan.tag("patient.id", String.valueOf(id));
             currentSpan.event("Affichage du formulaire de mise à jour pour le patient ID : " + id);
-            logger.info("Rendu de la page MAJ Patient : {} - Span courant : traceId={}, spanId={}",
-                    id,
-                    currentSpan.context().traceId(),
-                    currentSpan.context().spanId());
         } else {
-            logger.warn("Rendu de la page MAJ Patient id = {} - Aucun span courant trouvé pour la méthode showUpdateForm.", id);
+            logger.warn("Page rendering MAJ Patient id = {} - No current span found for the showUpdateForm method.", id);
         }
 
         // Logique métier
@@ -133,7 +163,6 @@ public class ClientController {
 
         // Récupération du patient
         final PatientBean patient = servicesProxy.retrievePatientId(id);
-        logger.info("Patient id = {}, dateOfBirth = {}, type: {}", patient.getId(), patient.getDateofbirth(), patient.getDateofbirth().getClass());
         model.addAttribute("patient", patient);
 
         // Ajouter un objet newNote pour le formulaire
@@ -144,92 +173,90 @@ public class ClientController {
 
         // Récupération des notes avec gestion du cas null
         List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
-        logger.info("Note list size = {}", notes.size());
         if (notes == null) {
             notes = new ArrayList<>(); // Liste vide par défaut
-            logger.warn("Aucune note trouvée pour le patient ID : {}. Liste vide initialisée.", id);
+            logger.warn("No notes found for patient ID: {}. Empty list initialised.", id);
         }
         model.addAttribute("notes", notes);
 
         // Récupération du RiskLevel depuis mRisk
         RiskLevelBean riskLevel = servicesProxy.getRiskLevel(id);
-        logger.info("Risk Level = {}", riskLevel.getRiskLevel());
         model.addAttribute("riskLevel", riskLevel.getRiskLevel());
 
         return "update";
     }
 
+    /**
+     * Adds a note for a specific patient.
+     *
+     * @param id                  The ID of the patient.
+     * @param newNote             The note to add.
+     * @param result              The binding result for validation.
+     * @param model               The model to which attributes are added.
+     * @param redirectAttributes  Attributes for redirecting with flash messages.
+     * @return A redirect to the patient update page.
+     */
+@PostMapping("/update/{id}/addnotes")
+@NewSpan("clientui-patient-add-note")
+public String addNote(
+        @PathVariable("id") Long id,
+        @Valid @ModelAttribute("newNote") NoteBean newNote,
+        BindingResult result,
+        Model model,
+        RedirectAttributes redirectAttributes) {
 
-    @PostMapping("/update/{id}/addnotes")
-    @NewSpan("clientui-patient-add-note")
-    public String addNote(
-            @PathVariable("id") Long id,
-            @Valid @ModelAttribute("newNote") NoteBean newNote,
-            BindingResult result,
-            Model model,
-            RedirectAttributes redirectAttributes) {
-
-        logger.info("Méthode addNote appelée avec id = {}", id); // Log de début de méthode
-
-        Span currentSpan = tracer.currentSpan();
-        if (currentSpan != null) {
-            currentSpan.tag("patient.id", String.valueOf(id));
-            currentSpan.event("Ajout d'une note pour le patient ID : " + id);
-            logger.info("Ajout d'une note pour le patient ID : {} - Span courant : traceId={}, spanId={}",
-                    id,
-                    currentSpan.context().traceId(),
-                    currentSpan.context().spanId());
-        } else {
-            logger.warn("Ajout d'une note pour le patient ID : {} - Aucun span courant trouvé.", id);
-        }
-
-        // Assigner patId et patient à newNote
-        newNote.setPatId(id);
-        newNote.setPatient(servicesProxy.retrievePatientId(id).getLastname());
-
-
-        // Gestion des erreurs de validation
-        if (result.hasErrors()) {
-            logger.warn("Il y a des erreurs de validation lors de l'ajout d'une note");
-
-            // Afficher les erreurs de validation
-            result.getAllErrors().forEach(error -> {
-                logger.warn("Erreur de validation: {}", error.getDefaultMessage());
-            });
-
-            // Recharge les données nécessaires pour la vue
-            PatientBean patient = servicesProxy.retrievePatientId(id);
-            List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
-            model.addAttribute("patient", patient);
-            model.addAttribute("notes", notes);
-            return "update";
-        }
-
-        // Appeler le microservice mnotes pour sauvegarder la note
-        logger.info("Nouvelle note à sauvegarder -- patId = {} -- patient = {} -- note = {}", newNote.getPatId(), newNote.getPatient(), newNote.getNote());
-        servicesProxy.addNote(newNote);
-
-        redirectAttributes.addFlashAttribute("success", "Note ajoutée avec succès !");
-
-        // Rediriger vers la page de mise à jour du patient
-        return "redirect:/update/" + id;
+    Span currentSpan = currentSpanOrNull();
+    if (currentSpan != null) {
+        currentSpan.tag("patient.id", String.valueOf(id));
+        currentSpan.event("Adding a note for patient ID: " + id);
+    } else {
+        logger.warn("Adding a note for patient ID: {} - No current span found.", id);
     }
 
+    PatientBean patient;
+    try {
+        patient = servicesProxy.retrievePatientId(id);
+        newNote.setPatId(id);
+        newNote.setPatient(patient.getLastname());
+    } catch (FeignException.NotFound ex) {
+        logger.warn("Patient not found with ID {}", id);
+        redirectAttributes.addFlashAttribute("error", "Patient not found.");
+        return "redirect:/patients";
+    }
 
-    // Méthode pour afficher le formulaire d'ajout d'un patient
+    // Gestion des erreurs de validation
+    if (result.hasErrors()) {
+        result.getAllErrors().forEach(error -> logger.warn("Validation error: {}", error.getDefaultMessage()));
+
+        List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
+        model.addAttribute("patient", patient);
+        model.addAttribute("notes", notes);
+        return "update";
+    }
+
+    // Appeler le microservice mnotes pour sauvegarder la note
+    servicesProxy.addNote(newNote);
+
+    redirectAttributes.addFlashAttribute("success", "Note successfully added");
+    return "redirect:/update/" + id;
+}
+
+
+    /**
+     * Displays the form for adding a new patient.
+     *
+     * @param model The model to which attributes are added.
+     * @return The name of the Thymeleaf template for the add patient form.
+     */
     @GetMapping("/add")
     @NewSpan("clientui-patient-add-form")
     public String showAddPatientForm(Model model) {
-
-        Span currentSpan = tracer.currentSpan();
+        Span currentSpan = currentSpanOrNull();
         if (currentSpan != null) {
             currentSpan.tag("page", "add-patient-form");
-            currentSpan.event("Affichage du formulaire d'ajout d'un patient");
-            logger.info("Affichage du formulaire d'ajout d'un patient - Span courant : traceId={}, spanId={}",
-                    currentSpan.context().traceId(),
-                    currentSpan.context().spanId());
+            currentSpan.event("Displaying the form for adding a patient");
         } else {
-            logger.warn("Affichage du formulaire d'ajout d'un patient - Aucun span courant trouvé.");
+            logger.warn("Displaying the patient addition form - No current span found.");
         }
 
         // Ajouter un nouvel objet PatientBean vide pour le formulaire
@@ -239,21 +266,24 @@ public class ClientController {
         return "add"; // Nom du template Thymeleaf pour le formulaire
     }
 
-
-    // Méthode pour traiter la soumission du formulaire d'ajout d'un patient
+    /**
+     * Processes the submission of the add patient form.
+     *
+     * @param patient             The patient to add.
+     * @param model               The model to which attributes are added.
+     * @param request             The HTTP request.
+     * @param redirectAttributes  Attributes for redirecting with flash messages.
+     * @return A redirect to the patient list page.
+     */
     @PostMapping("/add/addPatient")
     @NewSpan("clientui-patient-add-submit")
     public String addPatient(@ModelAttribute("patient") PatientBean patient, Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) {
-
-        Span currentSpan = tracer.currentSpan();
+        Span currentSpan = currentSpanOrNull();
         if (currentSpan != null) {
             currentSpan.tag("patient.lastname", patient.getLastname());
-            currentSpan.event("Soumission du formulaire d'ajout d'un patient");
-            logger.info("Soumission du formulaire d'ajout d'un patient - Span courant : traceId={}, spanId={}",
-                    currentSpan.context().traceId(),
-                    currentSpan.context().spanId());
+            currentSpan.event("Submitting patient addition form");
         } else {
-            logger.warn("Soumission du formulaire d'ajout d'un patient - Aucun span courant trouvé.");
+            logger.warn("Submitting patient addition form - No current span found.");
         }
 
         // NOTE : Pour conserver ce que l'utilisateur a renseigné.
@@ -266,29 +296,29 @@ public class ClientController {
         Elles sont levées par le microservice back concerné. */
 
         servicesProxy.addPatient(patient);
-        logger.info("Nouveau patient ajouté : {}", patient.getLastname());
-
-        redirectAttributes.addFlashAttribute("success", "Patient ajouté avec succès !");
-
+        redirectAttributes.addFlashAttribute("success", "Patient successfully added");
         return "redirect:/patients";
     }
 
-
+    /**
+     * Processes the submission of the update patient form.
+     *
+     * @param id                  The ID of the patient to update.
+     * @param patient             The updated patient information.
+     * @param request             The HTTP request.
+     * @param redirectAttributes  Attributes for redirecting with flash messages.
+     * @return A redirect to the patient update page.
+     */
     @PostMapping("/update/{id}/updatepatient")
     @NewSpan("clientui-patient-update-submit")
     public String updatePatient(@PathVariable("id") Long id, @ModelAttribute("patient") PatientBean patient,
                                 HttpServletRequest request, RedirectAttributes redirectAttributes) {
-
-        Span currentSpan = tracer.currentSpan();
+        Span currentSpan = currentSpanOrNull();
         if (currentSpan != null) {
             currentSpan.tag("patient.id", String.valueOf(id));
-            currentSpan.event("Soumission du formulaire de mise à jour du patient ID : " + id);
-            logger.info("Soumission du formulaire de mise à jour du patient ID : {} - Span courant : traceId={}, spanId={}",
-                    id,
-                    currentSpan.context().traceId(),
-                    currentSpan.context().spanId());
+            currentSpan.event("Submission of the Patient ID Update Form: " + id);
         } else {
-            logger.warn("Soumission du formulaire de mise à jour du patient ID : {} - Aucun span courant trouvé.", id);
+            logger.warn("Submission of patient update form ID: {} - No current span found.", id);
         }
 
         // NOTE : Pour conserver ce que l'utilisateur a renseigné.
@@ -303,13 +333,18 @@ public class ClientController {
 
         // Mise à jour du patient via le microservice
         servicesProxy.updatePatient(id, patient);
-        logger.info("Patient mis à jour avec succès : ID = {}", id);
-
-        redirectAttributes.addFlashAttribute("success", "Patient ajouté avec succès !");
+        redirectAttributes.addFlashAttribute("success", "Patient successfully updated");
 
         // Redirection vers la page de mise à jour du patient
         return "redirect:/update/" + id;
     }
 
-
+    /**
+     * Helper method to safely retrieve the current span from the tracer.
+     *
+     * @return The current span, or null if the tracer is not available.
+     */
+    private Span currentSpanOrNull() {
+        return tracer != null ? tracer.currentSpan() : null;
+    }
 }

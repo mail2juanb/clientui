@@ -17,41 +17,55 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.util.Collections;
 
-
+/**
+ * Configuration class for Spring Security in the ClientUI application.
+ * This class defines security filters, authentication providers, and HTTP security rules.
+ * It enables HTTP Basic authentication, disables CSRF protection, and adds a custom authentication filter.
+ */
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
 
+    /**
+     * Configures the security filter chain for HTTP requests.
+     * Permits public access to actuator, API documentation, and static resources.
+     * All other requests require authentication.
+     *
+     * @param http the {@link HttpSecurity} object to configure
+     * @return the configured {@link SecurityFilterChain}
+     * @throws Exception if an error occurs during configuration
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/webjars/**",   // Bootstrap via WebJars
-                                "/css/**",       // CSS
-                                "/js/**",        // JavaScript
-                                "/images/**",    // Images
-                                "/favicon.ico"   // Favicon
+                                "/actuator/**",
+                                "/apidocs/**",
+                                "/swagger*/**",
+                                "/v3/api-docs/**",
+                                "/webjars/**",
+                                "/favicon.ico"
                         ).permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
-
-
                 .httpBasic(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .addFilterBefore(new HeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
-    // AuthenticationProvider "vide" ou un AuthenticationManager personnalisé. Cela empêchera Spring Security de générer un utilisateur par défaut.
+    /**
+     * Provides a custom {@link AuthenticationProvider} that does not perform any authentication logic.
+     * This is used to prevent Spring Security from generating a default user.
+     *
+     * @return a custom {@link AuthenticationProvider} instance
+     */
     @Bean
     public AuthenticationProvider customAuthenticationProvider() {
         return new AuthenticationProvider() {
             @Override
             public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-                // Ton filtre gère déjà l'authentification, donc ce provider ne fait rien.
-                // Il est là pour empêcher Spring Security de générer un utilisateur par défaut.
                 return authentication;
             }
 
@@ -62,7 +76,13 @@ public class SecurityConfig {
         };
     }
 
-    // AuthenticationManager personnalisé pour utiliser ton provider
+    /**
+     * Configures a custom {@link AuthenticationManager} using the provided {@link AuthenticationProvider}.
+     *
+     * @param authenticationConfiguration the {@link AuthenticationConfiguration} to use
+     * @return a custom {@link AuthenticationManager} instance
+     * @throws Exception if an error occurs during configuration
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return new ProviderManager(Collections.singletonList(customAuthenticationProvider()));
