@@ -76,10 +76,10 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
         String username = request.getHeader("X-Auth-Username");
         String roles = request.getHeader("X-Auth-Roles");
 
-//        logger.info("=== HeaderAuthenticationFilter ===");
-//        logger.info("Request URI: {}", request.getRequestURI());
-//        logger.info("X-Auth-Username: {}", username);
-//        logger.info("X-Auth-Roles: {}", roles);
+        logger.debug("=== HeaderAuthenticationFilter ===");
+        logger.debug("Request URI: {}", request.getRequestURI());
+        logger.debug("X-Auth-Username: {}", username);
+        logger.debug("X-Auth-Roles: {}", roles);
 
         if (username != null) {
             List<GrantedAuthority> authorities = new ArrayList<>();
@@ -87,7 +87,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
                 String[] roleArray = roles.replace("[", "").replace("]", "").split(",");
                 for (String role : roleArray) {
                     String trimmedRole = role.trim();
-                    //logger.info("Adding role: {}", trimmedRole);
+                    logger.debug("Adding role: {}", trimmedRole);
                     authorities.add(new SimpleGrantedAuthority(trimmedRole));
                 }
             }
@@ -95,8 +95,8 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-//            logger.info("Authentication set for user: {}", username);
-//            logger.info("Authorities: {}", authorities);
+            logger.debug("Authentication set for user: {}", username);
+            logger.debug("Authorities: {}", authorities);
 
         } else {
             logger.warn("No X-Auth-Username header found!");

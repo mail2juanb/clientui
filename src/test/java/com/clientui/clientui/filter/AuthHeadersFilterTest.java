@@ -35,8 +35,8 @@ public class AuthHeadersFilterTest {
         // Arrange
         when(httpRequest.getHeader("X-Auth-Username")).thenReturn("testUser");
         when(httpRequest.getHeader("X-Auth-Roles")).thenReturn("[ROLE_USER, ROLE_ADMIN]");
-//        when(httpRequest.getRequestURL()).thenReturn(new StringBuffer("http://example.com/test"));
-        //when(httpRequest.getRequestURI()).thenReturn("/test");
+        when(httpRequest.getRequestURL()).thenReturn(new StringBuffer("http://example.com/test"));
+        when(httpRequest.getRequestURI()).thenReturn("/test");
 
         // Act
         authHeadersFilter.doFilter(httpRequest, response, chain);
@@ -52,8 +52,8 @@ public class AuthHeadersFilterTest {
         // Arrange
         when(httpRequest.getHeader("X-Auth-Username")).thenReturn("testUser");
         when(httpRequest.getHeader("X-Auth-Roles")).thenReturn(null);
-        //when(httpRequest.getRequestURL()).thenReturn(new StringBuffer("http://example.com/test"));
-        //when(httpRequest.getRequestURI()).thenReturn("/test");
+        when(httpRequest.getRequestURL()).thenReturn(new StringBuffer("http://example.com/test"));
+        when(httpRequest.getRequestURI()).thenReturn("/test");
 
         // Act
         authHeadersFilter.doFilter(httpRequest, response, chain);
@@ -69,8 +69,8 @@ public class AuthHeadersFilterTest {
         // Arrange
         when(httpRequest.getHeader("X-Auth-Username")).thenReturn(null);
         when(httpRequest.getHeader("X-Auth-Roles")).thenReturn("[ROLE_USER]");
-        //when(httpRequest.getRequestURL()).thenReturn(new StringBuffer("http://example.com/test"));
-        //when(httpRequest.getRequestURI()).thenReturn("/test");
+        when(httpRequest.getRequestURL()).thenReturn(new StringBuffer("http://example.com/test"));
+        when(httpRequest.getRequestURI()).thenReturn("/test");
 
         // Act
         authHeadersFilter.doFilter(httpRequest, response, chain);

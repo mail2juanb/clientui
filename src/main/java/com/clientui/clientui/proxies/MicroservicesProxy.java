@@ -17,7 +17,7 @@ import java.util.List;
  * Feign client interface for communicating with backend microservices in the MicroDiab application.
  * This interface defines methods to interact with 'mpatient', 'mnotes', and 'mrisk' microservices.
  */
-@FeignClient(name = "mgateway", url = "${mgateway.url:localhost:9010}", configuration = FeignConfig.class)
+@FeignClient(name = "mgateway", url = "${mgateway.url:http://mgateway:9010}", configuration = FeignConfig.class)
 @Tag(name = "Microservices Proxy", description = "Feign client for interacting with backend microservices")
 public interface MicroservicesProxy {
 

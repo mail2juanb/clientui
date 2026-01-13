@@ -90,7 +90,7 @@ public class FeignExceptionHandlerTest {
         // Arrange
         when(request.getAttribute("patient")).thenReturn(null);
         FeignException feignException = createFeignException(400, "[]");
-        //when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/test");
 
         // Act
         ModelAndView mav = feignExceptionHandler.handleFeignException(feignException, request);
@@ -107,7 +107,7 @@ public class FeignExceptionHandlerTest {
         patientBean.setId(null);
         when(request.getAttribute("patient")).thenReturn(patientBean);
         when(request.getAttribute("targetView")).thenReturn(null);
-        //when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/test");
         FeignException feignException = createFeignException(400, "[]");
 
         // Act
@@ -128,7 +128,7 @@ public class FeignExceptionHandlerTest {
         // Arrange
         when(request.getAttribute("patient")).thenReturn(patientBean);
         when(request.getAttribute("targetView")).thenReturn("update");
-//        when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/test");
         when(servicesProxy.retrievePatientId(anyLong())).thenReturn(patientBean);
         when(servicesProxy.retrieveNotesPatId(anyLong())).thenReturn(notesList);
         when(servicesProxy.getRiskLevel(anyLong())).thenReturn(riskLevelBean);
@@ -163,7 +163,7 @@ public class FeignExceptionHandlerTest {
         // Arrange
         when(request.getAttribute("patient")).thenReturn(patientBean);
         when(request.getAttribute("targetView")).thenReturn("update");
-//        when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/test");
 
         String errorBody = "{\"error\":\"Duplicate entry\"}";
         FeignException feignException = createFeignException(409, errorBody);
@@ -209,7 +209,7 @@ public class FeignExceptionHandlerTest {
         // Arrange
         when(request.getAttribute("patient")).thenReturn(patientBean);
         when(request.getAttribute("targetView")).thenReturn("custom-view");
-        //when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/test");
 
         String errorBody = "[{\"field\":\"email\",\"defaultMessage\":\"Invalid email\"}]";
         FeignException feignException = createFeignException(400, errorBody);
@@ -231,7 +231,7 @@ public class FeignExceptionHandlerTest {
     void handleFeignException_WhenFeignExceptionOnDataFetch_ShouldRedirectToPatients() {
         // Arrange
         when(request.getAttribute("patient")).thenReturn(patientBean);
-//        when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/test");
 
         FeignException innerException = createFeignException(404, "Not Found");
         when(servicesProxy.retrievePatientId(anyLong())).thenThrow(innerException);
@@ -252,7 +252,7 @@ public class FeignExceptionHandlerTest {
     void handleFeignException_WhenUnhandledHttpStatus_ShouldRedirectToHome() {
         // Arrange
         when(request.getAttribute("patient")).thenReturn(patientBean);
-        //when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/test");
         when(servicesProxy.getRiskLevel(anyLong())).thenReturn(riskLevelBean);
 
         FeignException feignException = createFeignException(401, "Unauthorized");
@@ -270,7 +270,7 @@ public class FeignExceptionHandlerTest {
     void handleFeignException_WhenFeignExceptionOnDataFetchWithStatus503_ShouldRedirectToHome() {
         // Arrange
         when(request.getAttribute("patient")).thenReturn(patientBean);
-        //when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/test");
 
         // Simule une FeignException avec un statut 503 lors de la récupération des données du patient
         FeignException innerException = createFeignException(503, "Service Unavailable");
@@ -292,7 +292,7 @@ public class FeignExceptionHandlerTest {
     void handleFeignException_WhenStatus409AndInvalidBody_ShouldRedirectToHome() {
         // Arrange
         when(request.getAttribute("patient")).thenReturn(patientBean);
-        //when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/test");
 
         FeignException feignException = createFeignException(409, "invalid json");
 
@@ -314,7 +314,7 @@ public class FeignExceptionHandlerTest {
     void handleServiceUnavailable_WhenStatus503_ShouldReturnHomeWithError() {
         // Arrange
         FeignException feignException = createFeignException(503, "Service Unavailable");
-//        when(request.getRequestURI()).thenReturn("/test");
+        //when(request.getRequestURI()).thenReturn("/test");
 
         // Act
         ModelAndView mav = feignExceptionHandler.handleFeignException(feignException, request);
@@ -329,7 +329,7 @@ public class FeignExceptionHandlerTest {
     void handleFeignException_WhenFeignExceptionOnDataFetchWithStatus5xx_ShouldRedirectToHome(int status, String expectedMessage) {
         // Arrange
         when(request.getAttribute("patient")).thenReturn(patientBean);
-        //when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/test");
 
         // Simule une FeignException avec un statut 5xx lors de la récupération des données du patient
         FeignException innerException = createFeignException(status, "Error");

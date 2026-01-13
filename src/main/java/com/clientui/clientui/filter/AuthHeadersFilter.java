@@ -3,8 +3,8 @@ package com.clientui.clientui.filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ import java.io.IOException;
 public class AuthHeadersFilter implements Filter {
     // filtre pour extraire les headers (webflux) et les stocker dans un objet accessible aux controleurs
 
-    //private static final Logger logger = LoggerFactory.getLogger(AuthHeadersFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthHeadersFilter.class);
 
     /**
      * Extracts the {@code X-Auth-Username} and {@code X-Auth-Roles} headers from the incoming request
@@ -46,28 +46,28 @@ public class AuthHeadersFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        //logger.debug("=== AuthHeadersFilter: Début du filtre ===");
+        logger.debug("=== AuthHeadersFilter: Début du filtre ===");
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        //logger.debug("Request URL: " + httpRequest.getRequestURL().toString());
-        //logger.debug("Request URI: " + httpRequest.getRequestURI());
+        logger.debug("Request URL: " + httpRequest.getRequestURL().toString());
+        logger.debug("Request URI: " + httpRequest.getRequestURI());
 
         // Lire les headers
         String username = httpRequest.getHeader("X-Auth-Username");
         String roles = httpRequest.getHeader("X-Auth-Roles");
-        //logger.debug("X-Auth-Username: " + username); // Log des headers
-        //logger.debug("X-Auth-Roles: " + roles);
+        logger.debug("X-Auth-Username: " + username); // Log des headers
+        logger.debug("X-Auth-Roles: " + roles);
 
         // Stocker dans un attribut de requête
         if (username != null) {
             httpRequest.setAttribute("userConnected", username);
             httpRequest.setAttribute("userRole", roles);
-            //logger.debug("Defined attributes: userConnected=" + username + ", userRole=" + roles);
+            logger.debug("Defined attributes: userConnected=" + username + ", userRole=" + roles);
         }
 
         // Continuer la chaîne de filtres
         chain.doFilter(request, response);
-        //logger.debug("=== AuthHeadersFilter: Fin du filtre ===");
+        logger.debug("=== AuthHeadersFilter: Fin du filtre ===");
     }
 
 

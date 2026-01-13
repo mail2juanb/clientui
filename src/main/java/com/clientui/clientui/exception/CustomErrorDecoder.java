@@ -35,7 +35,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
             try {
                 body = Util.toString(response.body().asReader(StandardCharsets.UTF_8));
             } catch (IOException e) {
-                log.error("Error reading the response body", e);
+                log.debug("Error reading the response body", e);
             }
         }
 

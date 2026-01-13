@@ -132,7 +132,7 @@ public class ClientController {
             model.addAttribute("error", error);
         }
 
-        // Logique métier
+        // Récupération de la liste des patients (cas nominal)
         model.addAttribute("currentPage", "patients");
         List<PatientBean> patients = servicesProxy.retrievePatientList();
         model.addAttribute("patients", patients);

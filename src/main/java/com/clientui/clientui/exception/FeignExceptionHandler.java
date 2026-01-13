@@ -88,7 +88,16 @@ public class FeignExceptionHandler {
             return handleServiceUnavailable(e, request);
         }
 
-        // Récupère l'ID du patient depuis la requête
+        // Cas 2: Requête pour la liste des patients (/patients)
+        if (request.getRequestURI().contains("/patients") && !request.getRequestURI().contains("/update/")) {
+            ModelAndView mav = new ModelAndView("list"); // Utilise le template existant
+            mav.addObject("currentPage", "patients");
+            mav.addObject("error", "Erreur lors de la récupération des patients : " + e.getMessage());
+            mav.addObject("patients", new ArrayList<PatientBean>()); // Liste vide pour éviter les NullPointerException
+            return mav;
+        }
+
+        // Cas 3: Requêtes spécifiques à un patient (update, add) - Récupère l'ID du patient depuis la requête
         final PatientBean requestPatient = (PatientBean) request.getAttribute("patient");
         if (requestPatient == null) {
             logger.error("No patient ID found in query.");
@@ -115,7 +124,7 @@ public class FeignExceptionHandler {
                 notes = servicesProxy.retrieveNotesPatId(patientId);
                 riskLevel = servicesProxy.getRiskLevel(patientId);
             } catch (FeignException ex) {
-                logger.error("Feign error when retrieving data for the patient {} : {}", patientId, ex.contentUTF8());
+                logger.debug("Feign error when retrieving data for the patient {} : {}", patientId, ex.contentUTF8());
                 // Si c'est une erreur de service indisponible, rediriger vers home
                 if (ex.status() == 503 || ex.status() >= 500) {
                     return handleServiceUnavailable(ex, request);
