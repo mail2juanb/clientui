@@ -18,7 +18,7 @@
                     <h2 class="mb-0 me-5">MicroDiab</h2>
                     <!-- Lien vers /patients, masqué si currentPage == 'patients', 'home" -->
                     <a th:if="${currentPage != 'patients' and currentPage != 'home'}" th:href="@{/patients}" class="btn btn-outline-light btn-sm">
-                        Liste des Patients
+                        Patient list
                     </a>
                     <a th:if="${currentPage == 'patients'}" th:href="@{/clientui/home}" class="btn btn-outline-light btn-sm">
                         Home
@@ -28,13 +28,13 @@
                 <div class="col-md-6 text-md-end text-center">
                     <div class="d-flex justify-content-md-end justify-content-center align-items-center">
                         <div class="me-3">
-                            <small class="opacity-75">Connecté en tant que:</small><br>
+                            <small class="opacity-75">Connected as:</small><br>
                             <strong th:text="${userConnected}" class="user">Username</strong>
                             <span class="badge bg-light text-primary ms-1" th:text="${userRole}">Role</span>
                         </div>
                         <form th:action="@{/logout}" method="POST" class="d-inline">
                             <button type="submit" class="btn btn-outline-light btn-sm">
-                                Déconnexion
+                                Logout
                             </button>
                         </form>
                     </div>
@@ -48,7 +48,7 @@
 <th:block th:fragment="footer">
     <footer class="bg-light text-center py-3 mt-auto">
         <div class="container">
-            <small class="text-muted">&copy; 2025 MicroDiab - Application de gestion médicale</small>
+            <small class="text-muted">&copy; 2026 MicroDiab - Medical management application</small>
         </div>
     </footer>
 </th:block>
