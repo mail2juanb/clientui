@@ -4,6 +4,7 @@ import com.clientui.clientui.beans.NoteBean;
 import com.clientui.clientui.beans.PatientBean;
 import com.clientui.clientui.beans.RiskLevelBean;
 import com.clientui.clientui.proxies.MicroservicesProxy;
+import com.clientui.clientui.tracing.TracingHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,11 +29,14 @@ public class ClientControllerTest {
     @Mock
     private MicroservicesProxy servicesProxy;
 
+    @Mock
+    private TracingHelper tracing;
+
     private ClientController controller;
 
     @BeforeEach
     void setUp() {
-        controller = new ClientController(servicesProxy);
+        controller = new ClientController(servicesProxy, tracing);
         // Le tracer n'est pas injecté - il reste null comme en production sans observability
     }
 

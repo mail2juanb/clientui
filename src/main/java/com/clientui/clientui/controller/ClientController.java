@@ -4,15 +4,13 @@ import com.clientui.clientui.beans.NoteBean;
 import com.clientui.clientui.beans.PatientBean;
 import com.clientui.clientui.beans.RiskLevelBean;
 import com.clientui.clientui.proxies.MicroservicesProxy;
+import com.clientui.clientui.tracing.TracingHelper;
 import feign.FeignException;
-import io.micrometer.tracing.Span;
-import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.annotation.NewSpan;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -41,18 +39,17 @@ public class ClientController {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientController.class);
 
-    @Autowired(required = false)
-    private Tracer tracer;
-
     private final MicroservicesProxy servicesProxy;
+    private final TracingHelper tracing;
 
     /**
      * Constructs a new ClientController with the specified MicroservicesProxy.
      *
      * @param servicesProxy The proxy used to communicate with backend microservices.
      */
-    public ClientController(MicroservicesProxy servicesProxy) {
+    public ClientController(MicroservicesProxy servicesProxy, TracingHelper tracing) {
         this.servicesProxy = servicesProxy;
+        this.tracing = tracing;
     }
 
     /**
@@ -72,6 +69,7 @@ public class ClientController {
         model.addAttribute("userRole", roles);
     }
 
+
     /**
      * Displays the home page of the application.
      *
@@ -87,25 +85,17 @@ public class ClientController {
             @RequestHeader(value = "X-Auth-Roles", required = false, defaultValue = "None_Username") String roles,
             Model model) {
 
-        // Récupère le span courant (créé automatiquement par @NewSpan)
-        //Span currentSpan = tracer.currentSpan();
-        Span currentSpan = currentSpanOrNull();
-        if (currentSpan != null) {
-            // Ajoute des tags personnalisés
-            currentSpan.tag("user.name", username);
-            currentSpan.tag("user.roles", roles);
-            currentSpan.tag("page", "home");
-            currentSpan.event("Rendering of the home page for the user: " + username + " - Role : " + roles);
-        } else {
-            logger.warn("Home page rendering - No current span found for the showHomes method.");
-        }
+        tracing.tag("page", "home");
+        tracing.tag("user.name", username);
+        tracing.tag("user.roles", roles);
+        tracing.event("Rendering home page");
 
-            // Logique métier
-            model.addAttribute("currentPage", "home");
-            model.addAttribute("userConnected", username);
-            model.addAttribute("userRole", roles);
+        // Logique métier
+        model.addAttribute("currentPage", "home");
+        model.addAttribute("userConnected", username);
+        model.addAttribute("userRole", roles);
 
-            return "home";
+        return "home";
     }
 
     /**
@@ -118,23 +108,20 @@ public class ClientController {
     @RequestMapping("/patients")
     @NewSpan("clientui-patients-list")
     public String showPatients(Model model, @RequestParam(required = false) String error) {
-        //Span currentSpan = tracer.currentSpan();
-        Span currentSpan = currentSpanOrNull();
-        if (currentSpan != null) {
-            currentSpan.tag("page", "patients-list");
-            currentSpan.event("Retrieving the patient list");
-        } else {
-            logger.warn("Patient list page rendering - No current span found for the showPatients method.");
-        }
+
+        tracing.tag("page", "patients-list");
+        tracing.event("Retrieving patient list");
 
         // Affichage des erreurs générales du handler lors des add ou update patient
         if (error != null) {
+            tracing.error("UIError", error);
             model.addAttribute("error", error);
         }
 
         // Récupération de la liste des patients (cas nominal)
         model.addAttribute("currentPage", "patients");
         List<PatientBean> patients = servicesProxy.retrievePatientList();
+        tracing.tag("patient.count", patients.size());
         model.addAttribute("patients", patients);
 
         return "list";
@@ -150,13 +137,10 @@ public class ClientController {
     @RequestMapping("/update/{id}")
     @NewSpan("clientui-patient-update-form")
     public String showUpdateForm(@PathVariable("id") Long id, Model model) {
-        Span currentSpan = currentSpanOrNull();
-        if (currentSpan != null) {
-            currentSpan.tag("patient.id", String.valueOf(id));
-            currentSpan.event("Affichage du formulaire de mise à jour pour le patient ID : " + id);
-        } else {
-            logger.warn("Page rendering MAJ Patient id = {} - No current span found for the showUpdateForm method.", id);
-        }
+
+        tracing.tag("page", "update");
+        tracing.tag("patient.id", id);
+        tracing.event("Displaying update form");
 
         // Logique métier
         model.addAttribute("currentPage", "update");
@@ -205,13 +189,8 @@ public String addNote(
         Model model,
         RedirectAttributes redirectAttributes) {
 
-    Span currentSpan = currentSpanOrNull();
-    if (currentSpan != null) {
-        currentSpan.tag("patient.id", String.valueOf(id));
-        currentSpan.event("Adding a note for patient ID: " + id);
-    } else {
-        logger.warn("Adding a note for patient ID: {} - No current span found.", id);
-    }
+    tracing.tag("patient.id", id);
+    tracing.event("Adding note");
 
     PatientBean patient;
     try {
@@ -227,7 +206,7 @@ public String addNote(
     // Gestion des erreurs de validation
     if (result.hasErrors()) {
         result.getAllErrors().forEach(error -> logger.warn("Validation error: {}", error.getDefaultMessage()));
-
+        tracing.error("ValidationError", "Invalid note data");
         List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
         model.addAttribute("patient", patient);
         model.addAttribute("notes", notes);
@@ -251,13 +230,9 @@ public String addNote(
     @GetMapping("/add")
     @NewSpan("clientui-patient-add-form")
     public String showAddPatientForm(Model model) {
-        Span currentSpan = currentSpanOrNull();
-        if (currentSpan != null) {
-            currentSpan.tag("page", "add-patient-form");
-            currentSpan.event("Displaying the form for adding a patient");
-        } else {
-            logger.warn("Displaying the patient addition form - No current span found.");
-        }
+
+        tracing.tag("page", "add-patient-form");
+        tracing.event("Displaying the form for adding a patient");
 
         // Ajouter un nouvel objet PatientBean vide pour le formulaire
         model.addAttribute("patient", new PatientBean());
@@ -278,13 +253,9 @@ public String addNote(
     @PostMapping("/add/addPatient")
     @NewSpan("clientui-patient-add-submit")
     public String addPatient(@ModelAttribute("patient") PatientBean patient, Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        Span currentSpan = currentSpanOrNull();
-        if (currentSpan != null) {
-            currentSpan.tag("patient.lastname", patient.getLastname());
-            currentSpan.event("Submitting patient addition form");
-        } else {
-            logger.warn("Submitting patient addition form - No current span found.");
-        }
+
+        tracing.tag("patient.lastname", patient.getLastname());
+        tracing.event("Submitting patient addition form");
 
         // NOTE : Pour conserver ce que l'utilisateur a renseigné.
         request.setAttribute("patient", patient);
@@ -313,13 +284,9 @@ public String addNote(
     @NewSpan("clientui-patient-update-submit")
     public String updatePatient(@PathVariable("id") Long id, @ModelAttribute("patient") PatientBean patient,
                                 HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        Span currentSpan = currentSpanOrNull();
-        if (currentSpan != null) {
-            currentSpan.tag("patient.id", String.valueOf(id));
-            currentSpan.event("Submission of the Patient ID Update Form: " + id);
-        } else {
-            logger.warn("Submission of patient update form ID: {} - No current span found.", id);
-        }
+
+        tracing.tag("patient.lastname", patient.getLastname());
+        tracing.event("Submitting patient addition form");
 
         // NOTE : Pour conserver ce que l'utilisateur a renseigné.
         patient.setId(id);      // Force l'id du patient depuis le PathVariable
@@ -339,12 +306,4 @@ public String addNote(
         return "redirect:/update/" + id;
     }
 
-    /**
-     * Helper method to safely retrieve the current span from the tracer.
-     *
-     * @return The current span, or null if the tracer is not available.
-     */
-    private Span currentSpanOrNull() {
-        return tracer != null ? tracer.currentSpan() : null;
-    }
 }

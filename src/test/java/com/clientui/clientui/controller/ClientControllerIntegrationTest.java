@@ -5,6 +5,7 @@ import com.clientui.clientui.beans.PatientBean;
 import com.clientui.clientui.beans.RiskLevelBean;
 import com.clientui.clientui.dto.ValidationErrorDTO;
 import com.clientui.clientui.proxies.MicroservicesProxy;
+import com.clientui.clientui.tracing.TracingHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import feign.Request;
@@ -44,8 +45,8 @@ public class ClientControllerIntegrationTest {
     @MockitoBean
     private MicroservicesProxy servicesProxy;
 
-//    @MockBean
-//    private io.micrometer.tracing.Tracer tracer;
+    @MockitoBean
+    private TracingHelper tracingHelper;
 
     private PatientBean testPatient;
     private List<PatientBean> testPatients;

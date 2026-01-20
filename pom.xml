@@ -220,6 +220,7 @@
                             <excludes>
                                 <exclude>com/clientui/clientui/ClientuiApplication*</exclude>
                                 <exclude>com/clientui/clientui/configuration/**</exclude>
+                                <exclude>com/clientui/clientui/tracing/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -237,6 +238,7 @@
                             <excludes>
                                 <exclude>com/clientui/clientui/ClientuiApplication*</exclude>
                                 <exclude>com/clientui/clientui/configuration/**</exclude>
+                                <exclude>com/clientui/clientui/tracing/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -254,6 +256,7 @@
                             <excludes>
                                 <exclude>com/clientui/clientui/ClientuiApplication*</exclude>
                                 <exclude>com/clientui/clientui/configuration/**</exclude>
+                                <exclude>com/clientui/clientui/tracing/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>
