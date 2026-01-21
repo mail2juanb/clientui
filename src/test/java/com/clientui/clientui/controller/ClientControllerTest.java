@@ -37,12 +37,8 @@ public class ClientControllerTest {
     @BeforeEach
     void setUp() {
         controller = new ClientController(servicesProxy, tracing);
-        // Le tracer n'est pas injecté - il reste null comme en production sans observability
     }
 
-    /* =====================================================
-       addUserInfoToModel
-       ===================================================== */
 
     @Test
     void addUserInfoToModel_shouldAddUserInfo() {
@@ -54,9 +50,6 @@ public class ClientControllerTest {
         verify(model).addAttribute("userRole", "ADMIN");
     }
 
-    /* =====================================================
-       showHomes
-       ===================================================== */
 
     @Test
     void showHomes_shouldReturnHomeView() {
@@ -81,9 +74,6 @@ public class ClientControllerTest {
         verify(model).addAttribute("userRole", "PasDeRole");
     }
 
-    /* =====================================================
-       showPatients
-       ===================================================== */
 
     @Test
     void showPatients_shouldReturnListView() {
@@ -109,9 +99,6 @@ public class ClientControllerTest {
         verify(model).addAttribute("error", "error-msg");
     }
 
-    /* =====================================================
-       showUpdateForm
-       ===================================================== */
 
     @Test
     void showUpdateForm_shouldReturnUpdateView() {
@@ -182,9 +169,6 @@ public class ClientControllerTest {
         ));
     }
 
-    /* =====================================================
-       addNote
-       ===================================================== */
 
     @Test
     void addNote_withValidationErrors_shouldReturnUpdateView() {
@@ -251,9 +235,6 @@ public class ClientControllerTest {
                 .addFlashAttribute("success", "Note successfully added");
     }
 
-    /* =====================================================
-       showAddPatientForm
-       ===================================================== */
 
     @Test
     void showAddPatientForm_shouldReturnAddView() {
@@ -266,9 +247,6 @@ public class ClientControllerTest {
         verify(model).addAttribute("currentPage", "add");
     }
 
-    /* =====================================================
-       addPatient
-       ===================================================== */
 
     @Test
     void addPatient_shouldRedirectToPatients() {
@@ -299,9 +277,6 @@ public class ClientControllerTest {
         verify(request).setAttribute("targetView", "add");
     }
 
-    /* =====================================================
-       updatePatient
-       ===================================================== */
 
     @Test
     void updatePatient_shouldRedirectToUpdatePage() {

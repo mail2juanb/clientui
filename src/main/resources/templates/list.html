@@ -10,15 +10,15 @@
 <!-- Header -->
 <th:block th:replace="~{fragments :: header}"></th:block>
 
-<!-- Corps principal -->
+<!-- Main body -->
 <main class="flex-grow-1 py-4">
 
-    <!-- Bloc pour afficher les erreurs globales -->
+    <!-- Block for displaying global errors -->
     <div th:if="${error}" class="alert alert-danger" role="alert">
         <p th:text="${error}">An error has occurred.</p>
     </div>
 
-    <!-- Bloc pour afficher les success -->
+    <!-- Block to display successes -->
     <div th:if="${success}" class="alert alert-success" role="alert">
         <p th:text="${success}">Success - nice...</p>
     </div>
@@ -26,7 +26,7 @@
     <div class="container">
         <h1 class="mb-4 text-center">Patient List</h1>
         <div class="row justify-content-center">
-            <!-- Bouton pour ajouter un nouveau patient -->
+            <!-- Button to add a new patient -->
             <div class="row justify-content-center mb-3">
                 <div class="col-auto">
                     <a th:href="@{/add}" class="btn btn-success">Add a patient</a>

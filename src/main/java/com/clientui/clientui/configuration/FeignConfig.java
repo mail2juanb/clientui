@@ -8,6 +8,8 @@ import io.micrometer.tracing.Tracer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+
 /**
  * Configuration class for Feign clients in the MicroDiab application.
  * Provides beans for Feign request interceptors, including basic authentication

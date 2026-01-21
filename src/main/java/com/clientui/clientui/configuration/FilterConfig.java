@@ -4,6 +4,8 @@ import com.clientui.clientui.filter.AuthHeadersFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+
 /**
  * Configuration class for custom filters in the MicroDiab application.
  * Registers a custom authentication headers filter to ensure headers are available

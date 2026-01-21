@@ -25,7 +25,6 @@ import java.io.IOException;
  * @see HttpServletRequest
  */
 public class AuthHeadersFilter implements Filter {
-    // filtre pour extraire les headers (webflux) et les stocker dans un objet accessible aux controleurs
 
     private static final Logger logger = LoggerFactory.getLogger(AuthHeadersFilter.class);
 
@@ -52,20 +51,20 @@ public class AuthHeadersFilter implements Filter {
         logger.debug("Request URL: " + httpRequest.getRequestURL().toString());
         logger.debug("Request URI: " + httpRequest.getRequestURI());
 
-        // Lire les headers
+        // Read the headers
         String username = httpRequest.getHeader("X-Auth-Username");
         String roles = httpRequest.getHeader("X-Auth-Roles");
         logger.debug("X-Auth-Username: " + username); // Log des headers
         logger.debug("X-Auth-Roles: " + roles);
 
-        // Stocker dans un attribut de requête
+        // Store in a query attribute
         if (username != null) {
             httpRequest.setAttribute("userConnected", username);
             httpRequest.setAttribute("userRole", roles);
             logger.debug("Defined attributes: userConnected=" + username + ", userRole=" + roles);
         }
 
-        // Continuer la chaîne de filtres
+        // Continue the filter chain
         chain.doFilter(request, response);
         logger.debug("=== AuthHeadersFilter: Fin du filtre ===");
     }

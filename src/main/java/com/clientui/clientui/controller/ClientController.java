@@ -112,13 +112,11 @@ public class ClientController {
         tracing.tag("page", "patients-list");
         tracing.event("Retrieving patient list");
 
-        // Affichage des erreurs générales du handler lors des add ou update patient
         if (error != null) {
             tracing.error("UIError", error);
             model.addAttribute("error", error);
         }
 
-        // Récupération de la liste des patients (cas nominal)
         model.addAttribute("currentPage", "patients");
         List<PatientBean> patients = servicesProxy.retrievePatientList();
         tracing.tag("patient.count", patients.size());
@@ -142,20 +140,16 @@ public class ClientController {
         tracing.tag("patient.id", id);
         tracing.event("Displaying update form");
 
-        // Logique métier
         model.addAttribute("currentPage", "update");
 
-        // Récupération du patient
         final PatientBean patient = servicesProxy.retrievePatientId(id);
         model.addAttribute("patient", patient);
 
-        // Ajouter un objet newNote pour le formulaire
         NoteBean newNote = new NoteBean();
         newNote.setPatId(id);
         newNote.setPatient(patient.getLastname());
         model.addAttribute("newNote", newNote);
 
-        // Récupération des notes avec gestion du cas null
         List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
         if (notes == null) {
             notes = new ArrayList<>(); // Liste vide par défaut
@@ -163,7 +157,6 @@ public class ClientController {
         }
         model.addAttribute("notes", notes);
 
-        // Récupération du RiskLevel depuis mRisk
         RiskLevelBean riskLevel = servicesProxy.getRiskLevel(id);
         model.addAttribute("riskLevel", riskLevel.getRiskLevel());
 
@@ -203,7 +196,6 @@ public String addNote(
         return "redirect:/patients";
     }
 
-    // Gestion des erreurs de validation
     if (result.hasErrors()) {
         result.getAllErrors().forEach(error -> logger.warn("Validation error: {}", error.getDefaultMessage()));
         tracing.error("ValidationError", "Invalid note data");
@@ -213,7 +205,6 @@ public String addNote(
         return "update";
     }
 
-    // Appeler le microservice mnotes pour sauvegarder la note
     servicesProxy.addNote(newNote);
 
     redirectAttributes.addFlashAttribute("success", "Note successfully added");
@@ -234,7 +225,6 @@ public String addNote(
         tracing.tag("page", "add-patient-form");
         tracing.event("Displaying the form for adding a patient");
 
-        // Ajouter un nouvel objet PatientBean vide pour le formulaire
         model.addAttribute("patient", new PatientBean());
         model.addAttribute("currentPage", "add");
 
@@ -257,14 +247,9 @@ public String addNote(
         tracing.tag("patient.lastname", patient.getLastname());
         tracing.event("Submitting patient addition form");
 
-        // NOTE : Pour conserver ce que l'utilisateur a renseigné.
         request.setAttribute("patient", patient);
 
-        // Ajoute le nom de la vue dans les attributs de la requête
         request.setAttribute("targetView", "add");
-
-        /* NOTE :Gestion des erreurs de validation via le FeignExceptionHandler.
-        Elles sont levées par le microservice back concerné. */
 
         servicesProxy.addPatient(patient);
         redirectAttributes.addFlashAttribute("success", "Patient successfully added");
@@ -288,21 +273,14 @@ public String addNote(
         tracing.tag("patient.lastname", patient.getLastname());
         tracing.event("Submitting patient addition form");
 
-        // NOTE : Pour conserver ce que l'utilisateur a renseigné.
-        patient.setId(id);      // Force l'id du patient depuis le PathVariable
+        patient.setId(id);
         request.setAttribute("patient", patient);
 
-        // Ajoute le nom de la vue dans les attributs de la requête
         request.setAttribute("targetView", "update");
 
-        /* NOTE :Gestion des erreurs de validation via le FeignExceptionHandler.
-        Elles sont levées par le microservice back concerné. */
-
-        // Mise à jour du patient via le microservice
         servicesProxy.updatePatient(id, patient);
         redirectAttributes.addFlashAttribute("success", "Patient successfully updated");
 
-        // Redirection vers la page de mise à jour du patient
         return "redirect:/update/" + id;
     }
 

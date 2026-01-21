@@ -35,6 +35,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+
 @WebMvcTest(ClientController.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class ClientControllerIntegrationTest {
@@ -190,11 +191,7 @@ public class ClientControllerIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    // ICI LES  NOUVEAUTES
 
-    // --------------------------
-    // 400 - Validation error
-    // --------------------------
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @DisplayName("POST /add/addPatient - Validation error 400")
@@ -235,9 +232,7 @@ public class ClientControllerIntegrationTest {
                         org.hamcrest.Matchers.hasEntry("lastname", "Lastname cannot be empty")));
     }
 
-    // --------------------------
-    // 409 - Conflict / Duplicate
-    // --------------------------
+
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @DisplayName("POST /add/addPatient - Conflict 409")
@@ -273,14 +268,12 @@ public class ClientControllerIntegrationTest {
                 .andExpect(model().attribute("error", "Patient already exists"));
     }
 
-    // --------------------------
-    // 404 - Patient not found
-    // --------------------------
+
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @DisplayName("POST /update/{id}/addnotes - Patient not found")
     void testAddNotePatientNotFound() throws Exception {
-        // Simule la récupération du patient qui n'existe pas
+        // Simulates the recovery of a patient who does not exist.
         doThrow(FeignException.errorStatus(
                 "retrievePatientId",
                 Response.builder()
@@ -292,7 +285,7 @@ public class ClientControllerIntegrationTest {
                         .build()
         )).when(servicesProxy).retrievePatientId(999L);
 
-        // Le corps du test reste identique
+        // The body of the test remains the same.
         mockMvc.perform(post("/update/999/addnotes")
                         .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())
                         .param("note", "Note for non-existing patient"))

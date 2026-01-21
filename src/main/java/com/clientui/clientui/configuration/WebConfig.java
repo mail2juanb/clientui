@@ -28,7 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Expose le dossier "apidocs" comme ressource statique
+        // Exposes the ‘apidocs’ folder as a static resource
         registry.addResourceHandler("/apidocs/**")
                 .addResourceLocations("classpath:/static/apidocs/");
     }
