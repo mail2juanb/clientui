@@ -99,7 +99,7 @@
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
-        <!-- Optionnel : for logs with trace ID -->
+        <!-- Optional : for logs with trace ID -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
