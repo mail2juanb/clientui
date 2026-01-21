@@ -5,15 +5,10 @@ import feign.Request;
 import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 
 public class CustomErrorDecoderTest {
@@ -196,7 +191,6 @@ public class CustomErrorDecoderTest {
     @Test
     void decode_WithIOException_ShouldLogErrorAndReturnFeignException() {
         // Arrange
-        // Créer un InputStream qui lance une IOException
         java.io.InputStream errorStream = new java.io.InputStream() {
             @Override
             public int read() throws IOException {
@@ -209,7 +203,7 @@ public class CustomErrorDecoderTest {
                 .reason("Service Unavailable")
                 .request(request)
                 .headers(new HashMap<>())
-                .body(errorStream, 100) // Utiliser l'InputStream qui lance une exception
+                .body(errorStream, 100)
                 .build();
 
         // Act

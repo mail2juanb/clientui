@@ -30,7 +30,6 @@ public class CustomErrorDecoder implements ErrorDecoder {
     public Exception decode(String methodKey, Response response) {
         String body = null;
 
-        // Vérifier que le body n'est pas null avant de le lire
         if (response.body() != null) {
             try {
                 body = Util.toString(response.body().asReader(StandardCharsets.UTF_8));
@@ -39,7 +38,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
             }
         }
 
-        // RECONSTRUIRE LE RESPONSE avec le body pour qu'il reste lisible ensuite
+        // Reconstruct the response with the body so that it remains legible afterwards.
         Response newResponse = response.toBuilder()
                 .body(body, StandardCharsets.UTF_8)
                 .build();

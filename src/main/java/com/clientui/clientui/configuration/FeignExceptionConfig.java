@@ -3,6 +3,8 @@ package com.clientui.clientui.configuration;
 import com.clientui.clientui.exception.CustomErrorDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+
 /**
  * Configuration class for custom Feign exception handling in the MicroDiab application.
  * Provides a bean for a custom error decoder to handle exceptions thrown by Feign clients.

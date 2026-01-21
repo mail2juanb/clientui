@@ -13,10 +13,10 @@
     <header class="bg-primary text-white py-3 shadow-sm">
         <div class="container">
             <div class="row align-items-center">
-                <!-- Partie gauche : Titre + Bouton Liste des Patients -->
+                <!-- Left side : Title + Patient List button -->
                 <div class="col-md-6 d-flex align-items-center">
                     <h2 class="mb-0 me-5">MicroDiab</h2>
-                    <!-- Lien vers /patients, masqué si currentPage == 'patients', 'home" -->
+                    <!-- Link to /patients, hidden if currentPage == “patients”, 'home' -->
                     <a th:if="${currentPage != 'patients' and currentPage != 'home'}" th:href="@{/patients}" class="btn btn-outline-light btn-sm">
                         Patient list
                     </a>
@@ -24,7 +24,7 @@
                         Home
                     </a>
                 </div>
-                <!-- Partie droite : Utilisateur + Déconnexion -->
+                <!-- Right side : User + Logout -->
                 <div class="col-md-6 text-md-end text-center">
                     <div class="d-flex justify-content-md-end justify-content-center align-items-center">
                         <div class="me-3">

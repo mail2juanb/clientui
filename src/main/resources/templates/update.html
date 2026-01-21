@@ -11,10 +11,10 @@
 <!-- Header -->
 <th:block th:replace="~{fragments :: header}"></th:block>
 
-<!-- Corps principal -->
+<!-- Main body -->
 <main class="flex-grow-1 py-4">
     <div class="container mt-4">
-        <!-- Titre principal -->
+        <!-- Main title -->
         <div class="row mb-4">
             <h1 class="text-center">
                 Patient folder id =
@@ -22,23 +22,21 @@
             </h1>
         </div>
 
-        <!-- Bloc pour afficher les erreurs globales -->
+        <!-- Block for displaying global errors -->
         <div th:if="${error}" class="alert alert-danger" role="alert">
             <p th:text="${error}">An error has occurred.</p>
         </div>
 
-        <!-- Bloc pour afficher les success -->
+        <!-- Block to display successes -->
         <div th:if="${success}" class="alert alert-success" role="alert">
             <p th:text="${success}">Success - nice...</p>
         </div>
 
-        <!-- Section : Informations du patient -->
+        <!-- Section: Patient information -->
         <div class="row mb-4">
             <h2>Patient Information</h2>
             <form th:action="@{/update/{id}/updatepatient(id=${id})}" th:object="${patient}" method="post" class="w-100">
-<!--                <form th:action="@{/update/{id}/updatepatient(id=${patient.id})}" th:object="${patient}" method="post" class="w-100">-->
-
-                <!-- Champs du formulaire -->
+                <!-- Form fields -->
                 <div class="mb-3 row">
                     <label for="lastname" class="col-sm-2 col-form-label">Lastname</label>
                     <div class="col-sm-10">
@@ -84,10 +82,10 @@
                     </div>
                 </div>
 
-                <!-- Boutons -->
+                <!-- Buttons -->
                 <div class="mb-3 row">
                     <div class="col-sm-12 d-flex gap-2">
-                        <!-- Champ caché pour patId -->
+                        <!-- Hidden field for patId -->
                         <input type="hidden" name="id" th:value="${patient.id}">
                         <input class="btn btn-primary" type="submit" value="Update">
                     </div>
@@ -95,7 +93,7 @@
             </form>
         </div>
 
-        <!-- Section : Risk Level -->
+        <!-- Section: Risk Level -->
         <div class="row mt-4">
             <h2>Risk Level</h2>
             <div class="card">
@@ -114,13 +112,13 @@
         <div class="row mt-4">
             <h2>Notes</h2>
 
-            <!-- Sous-section : Ajouter une note -->
+            <!-- Subsection : Add a note -->
             <div class="mb-4">
                 <h4>Add Note</h4>
                 <form th:action="@{/update/{id}/addnotes(id=${patient.id})}" th:object="${newNote}" method="post">
-                    <!-- Champ caché pour patId -->
+                    <!-- Hidden field for patId -->
                     <input type="hidden" th:field="*{patId}" />
-                    <!-- Champ caché pour patient -->
+                    <!-- Hidden field for patient -->
                     <input type="hidden" th:field="*{patient}" />
                     <div class="mb-3 row">
                         <div class="col-sm-10">
@@ -136,7 +134,7 @@
                 </form>
             </div>
 
-            <!-- Sous-section : Notes précédentes -->
+            <!-- Subsection: Previous notes -->
             <div>
                 <h4>Previous Notes</h4>
                 <div th:if="${not #lists.isEmpty(notes)}">

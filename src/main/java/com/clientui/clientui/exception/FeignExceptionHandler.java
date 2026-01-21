@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+
 /**
  * Global exception handler for {@link FeignException} in the ClientUI application.
  * This class is responsible for intercepting and processing exceptions thrown by Feign clients,
@@ -81,14 +83,13 @@ public class FeignExceptionHandler {
      */
     @ExceptionHandler(FeignException.class)
     public ModelAndView handleFeignException(FeignException e, HttpServletRequest request) {
-        //logger.warn("FeignException intercepted : status={}, URI={}", e.status(), request.getRequestURI());
 
-        // Traiter d'abord les erreurs critiques (503, 500, etc.)
+        // Handle critical errors first (503, 500, etc.)
         if (e.status() == 503 || e.status() >= 500) {
             return handleServiceUnavailable(e, request);
         }
 
-        // Cas 2: Requête pour la liste des patients (/patients)
+        // Case 2: Request for patient list (/patients)
         if (request.getRequestURI().contains("/patients") && !request.getRequestURI().contains("/update/")) {
             ModelAndView mav = new ModelAndView("list"); // Utilise le template existant
             mav.addObject("currentPage", "patients");
@@ -97,7 +98,7 @@ public class FeignExceptionHandler {
             return mav;
         }
 
-        // Cas 3: Requêtes spécifiques à un patient (update, add) - Récupère l'ID du patient depuis la requête
+        // Case 3: Patient-specific queries (update, add) - Retrieves the patient ID from the query
         final PatientBean requestPatient = (PatientBean) request.getAttribute("patient");
         if (requestPatient == null) {
             logger.error("No patient ID found in query.");
@@ -109,7 +110,7 @@ public class FeignExceptionHandler {
             patientId = requestPatient.getId();
         }
 
-        // Initialise les objets par défaut
+        // Initialises default objects
         PatientBean patient = requestPatient;
         List<NoteBean> notes = new ArrayList<>();
         RiskLevelBean riskLevel = new RiskLevelBean();
@@ -117,7 +118,7 @@ public class FeignExceptionHandler {
         NoteBean newNote = new NoteBean();
         newNote.setPatId(patientId);
 
-        // Si on a un patientId, récupère les données
+        // If we have a patient ID, we retrieve the data.
         if (patientId != null) {
             try {
                 patient = servicesProxy.retrievePatientId(patientId);
@@ -125,24 +126,24 @@ public class FeignExceptionHandler {
                 riskLevel = servicesProxy.getRiskLevel(patientId);
             } catch (FeignException ex) {
                 logger.debug("Feign error when retrieving data for the patient {} : {}", patientId, ex.contentUTF8());
-                // Si c'est une erreur de service indisponible, rediriger vers home
+                // If it is a service unavailable error, redirect to home
                 if (ex.status() == 503 || ex.status() >= 500) {
                     return handleServiceUnavailable(ex, request);
                 }
-                // Sinon, redirige vers la liste des patients
+                // Otherwise, redirect to the patient list.
                 ModelAndView mav = new ModelAndView("redirect:/patients");
                 mav.addObject("error", "Error retrieving patient data : " + ex.getMessage());
                 return mav;
             }
         }
 
-        // Détermine la vue depuis la requete
+        // Determines the view from the query
         String viewName = (String) request.getAttribute("targetView");
         if (viewName == null) {
             viewName = "update";
         }
 
-        // Création du ModelAndView
+        // ModelAndView creation
         ModelAndView mav = new ModelAndView(viewName);
         mav.addObject("patient", patient);
         mav.addObject("notes", notes);
@@ -150,11 +151,11 @@ public class FeignExceptionHandler {
         mav.addObject("riskLevel", riskLevel.getRiskLevel());
         mav.addObject("currentPage", viewName);
 
-        // Traite le corps de la réponse Feign
+        // Processes the body of the Feign response
         final String body = e.contentUTF8();
 
         try {
-            // 400 - Erreurs de validation
+            // 400 - Validation errors
             if (e.status() == 400) {
                 List<ValidationErrorDTO> errors = objectMapper.readValue(
                         body, new TypeReference<List<ValidationErrorDTO>>() {});
@@ -165,7 +166,7 @@ public class FeignExceptionHandler {
                 }
                 mav.addObject("errors", errorMap);
             }
-            // 409 - Conflit / doublon
+            // 409 - Conflit / duplicate
             else if (e.status() == 409) {
                 try {
                     Map<String, String> map = objectMapper.readValue(body, Map.class);
@@ -175,7 +176,7 @@ public class FeignExceptionHandler {
                             .addObject("error", "Conflict detected (unexpected format): " + ex.getMessage());
                 }
             }
-            // Autre code HTTP
+            // Other HTTP codes
             else {
                 return new ModelAndView("redirect:/home")
                         .addObject("error", "Error " + e.status() + " : " + e.getMessage());

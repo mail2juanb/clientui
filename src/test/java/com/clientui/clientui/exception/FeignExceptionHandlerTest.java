@@ -18,11 +18,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.ModelAndView;
-
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Stream;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -58,7 +56,7 @@ public class FeignExceptionHandlerTest {
     }
 
     /**
-     * Crée une instance de FeignException avec un statut et un body donnés
+     * Creates an instance of FeignException with a given status and body.
      */
     private FeignException createFeignException(int status, String body) {
         Request request = Request.create(
@@ -84,7 +82,6 @@ public class FeignExceptionHandlerTest {
         );
     }
 
-    // Règle métier : Si aucun patient n'est présent dans la requête, rediriger vers /home
     @Test
     void handleFeignException_WhenNoPatientInRequest_ShouldRedirectToHome() {
         // Arrange
@@ -100,7 +97,6 @@ public class FeignExceptionHandlerTest {
         assertEquals("No patient ID found in query.", mav.getModel().get("error"));
     }
 
-    // Règle métier : Si le patient n'a pas d'ID, utiliser la vue par défaut (update)
     @Test
     void handleFeignException_WhenPatientHasNoId_ShouldUseDefaultView() {
         // Arrange
@@ -121,7 +117,6 @@ public class FeignExceptionHandlerTest {
         assertEquals("Undefined", mav.getModel().get("riskLevel"));
     }
 
-    // Règle métier : Pour les erreurs 400, ajouter les erreurs de validation ou rediriger vers /home si le corps est invalide
     @ParameterizedTest
     @MethodSource("provideErrorBodiesFor400")
     void handleFeignException_WhenStatus400_ShouldHandleVariousBodies(String errorBody, String expectedView, boolean shouldHaveErrors) {
@@ -157,7 +152,6 @@ public class FeignExceptionHandlerTest {
         );
     }
 
-    // Règle métier : Pour les erreurs 409, ajouter un message d'erreur ou utiliser un message par défaut
     @Test
     void handleFeignException_WhenStatus409_ShouldAddErrorMessage() {
         // Arrange
@@ -180,30 +174,6 @@ public class FeignExceptionHandlerTest {
         assertEquals("Duplicate entry", mav.getModel().get("error"));
     }
 
-    // Règle métier : Pour les erreurs 5xx ou non spécifiées, rediriger vers /home
-    @ParameterizedTest
-    @MethodSource("provideUnhandledStatusCodes")
-    void handleFeignException_WhenUnhandledStatus_ShouldRedirectToHome(int status, String body) {
-        // Arrange
-        //when(request.getRequestURI()).thenReturn("/test");
-
-        FeignException feignException = createFeignException(status, body);
-
-        // Act
-        ModelAndView mav = feignExceptionHandler.handleFeignException(feignException, request);
-
-        // Assert
-        assertEquals("/home", mav.getViewName());
-        assertTrue(mav.getModel().containsKey("error"));
-    }
-
-    private static Stream<Arguments> provideUnhandledStatusCodes() {
-        return Stream.of(
-                Arguments.of(500, "Internal Server Error"),
-                Arguments.of(503, "Service Unavailable"));
-    }
-
-    // Règle métier : Si une vue personnalisée est spécifiée, l'utiliser
     @Test
     void handleFeignException_WithCustomTargetView_ShouldUseSpecifiedView() {
         // Arrange
@@ -226,7 +196,6 @@ public class FeignExceptionHandlerTest {
         assertEquals("custom-view", mav.getModel().get("currentPage"));
     }
 
-    // Règle métier : Si une exception est levée lors de la récupération des données, rediriger vers /patients
     @Test
     void handleFeignException_WhenFeignExceptionOnDataFetch_ShouldRedirectToPatients() {
         // Arrange
@@ -247,7 +216,6 @@ public class FeignExceptionHandlerTest {
         assertTrue(((String) mav.getModel().get("error")).startsWith("Error retrieving patient data :"));
     }
 
-    //2. Test pour la gestion d'un code HTTP non géré (redirection vers /home)
     @Test
     void handleFeignException_WhenUnhandledHttpStatus_ShouldRedirectToHome() {
         // Arrange
@@ -266,14 +234,15 @@ public class FeignExceptionHandlerTest {
         assertTrue(((String) mav.getModel().get("error")).startsWith("Error 401 :"));
     }
 
-    @Test
-    void handleFeignException_WhenFeignExceptionOnDataFetchWithStatus503_ShouldRedirectToHome() {
+    @ParameterizedTest
+    @MethodSource("provide5xxStatusCodesForDataFetch")
+    void handleFeignException_WhenFeignExceptionOnDataFetchWithStatus5xx_ShouldRedirectToHome(int status, String expectedMessage) {
         // Arrange
         when(request.getAttribute("patient")).thenReturn(patientBean);
         when(request.getRequestURI()).thenReturn("/test");
 
-        // Simule une FeignException avec un statut 503 lors de la récupération des données du patient
-        FeignException innerException = createFeignException(503, "Service Unavailable");
+        // Simule une FeignException avec un statut 5xx lors de la récupération des données du patient
+        FeignException innerException = createFeignException(status, "Error");
         when(servicesProxy.retrievePatientId(anyLong())).thenThrow(innerException);
 
         // Crée une FeignException initiale (par exemple, 400)
@@ -285,7 +254,14 @@ public class FeignExceptionHandlerTest {
         // Assert
         assertEquals("/home", mav.getViewName());
         assertTrue(mav.getModel().containsKey("error"));
-        assertEquals("A required service is currently unavailable. Please try again later.", mav.getModel().get("error"));
+        assertEquals(expectedMessage, mav.getModel().get("error"));
+    }
+
+    private static Stream<Arguments> provide5xxStatusCodesForDataFetch() {
+        return Stream.of(
+                Arguments.of(500, "A service encountered an internal error (status 500). Please try again later."),
+                Arguments.of(503, "A required service is currently unavailable. Please try again later.")
+        );
     }
 
     @Test
@@ -308,35 +284,112 @@ public class FeignExceptionHandlerTest {
         assertTrue(mav.getModel().containsKey("error"));
     }
 
-    // Gestion des erreurs 503 (Service Unavailable)
-    // Vérifier que la méthode handleServiceUnavailable retourne bien la vue /home avec le bon message d’erreur.
     @Test
-    void handleServiceUnavailable_WhenStatus503_ShouldReturnHomeWithError() {
+    void handleFeignException_WhenErrorOnPatientsListRetrieval_ShouldReturnListViewWithError() {
         // Arrange
-        FeignException feignException = createFeignException(503, "Service Unavailable");
-        //when(request.getRequestURI()).thenReturn("/test");
+        when(request.getRequestURI()).thenReturn("/patients");
+        FeignException feignException = createFeignException(400, "[]");
 
         // Act
         ModelAndView mav = feignExceptionHandler.handleFeignException(feignException, request);
 
         // Assert
-        assertEquals("/home", mav.getViewName());
-        assertEquals("A required service is currently unavailable. Please try again later.", mav.getModel().get("error"));
+        assertEquals("list", mav.getViewName());
+        assertEquals("patients", mav.getModel().get("currentPage"));
+        assertTrue(mav.getModel().containsKey("error"));
+        assertTrue(((String) mav.getModel().get("error")).contains("Erreur lors de la récupération des patients"));
+        assertNotNull(mav.getModel().get("patients"));
+        assertTrue(((List<?>) mav.getModel().get("patients")).isEmpty());
+    }
+
+    @Test
+    void handleFeignException_WhenErrorOnPatientsUpdate_ShouldNotReturnListView() {
+        // Arrange
+        when(request.getRequestURI()).thenReturn("/patients/update/1");
+        when(request.getAttribute("patient")).thenReturn(patientBean);
+        when(request.getAttribute("targetView")).thenReturn("update");
+        when(servicesProxy.retrievePatientId(anyLong())).thenReturn(patientBean);
+        when(servicesProxy.retrieveNotesPatId(anyLong())).thenReturn(notesList);
+        when(servicesProxy.getRiskLevel(anyLong())).thenReturn(riskLevelBean);
+
+        FeignException feignException = createFeignException(400, "[]");
+
+        // Act
+        ModelAndView mav = feignExceptionHandler.handleFeignException(feignException, request);
+
+        // Assert
+        assertNotEquals("list", mav.getViewName());
+        assertEquals("update", mav.getViewName());
+    }
+
+    @ParameterizedTest
+    @MethodSource("providePatientsUris")
+    void handleFeignException_WhenErrorOnVariousPatientsUris_ShouldReturnListView(String uri, boolean shouldReturnList) {
+        // Arrange
+        when(request.getRequestURI()).thenReturn(uri);
+
+        if (!shouldReturnList) {
+            when(request.getAttribute("patient")).thenReturn(patientBean);
+            when(request.getAttribute("targetView")).thenReturn("update");
+            when(servicesProxy.retrievePatientId(anyLong())).thenReturn(patientBean);
+            when(servicesProxy.retrieveNotesPatId(anyLong())).thenReturn(notesList);
+            when(servicesProxy.getRiskLevel(anyLong())).thenReturn(riskLevelBean);
+        }
+
+        FeignException feignException = createFeignException(400, "[]");
+
+        // Act
+        ModelAndView mav = feignExceptionHandler.handleFeignException(feignException, request);
+
+        // Assert
+        if (shouldReturnList) {
+            assertEquals("list", mav.getViewName());
+            assertEquals("patients", mav.getModel().get("currentPage"));
+        } else {
+            assertNotEquals("list", mav.getViewName());
+        }
+    }
+
+    private static Stream<Arguments> providePatientsUris() {
+        return Stream.of(
+                Arguments.of("/patients", true),
+                Arguments.of("/patients/list", true),
+                Arguments.of("/patients?page=1", true),
+                Arguments.of("/patients/update/1", false),
+                Arguments.of("/patients/update/", false),
+                Arguments.of("/update/patients", false)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provide4xxStatusCodesForPatients")
+    void handleFeignException_When4xxStatusOnPatientsUri_ShouldReturnListView(int status, String body) {
+        // Arrange
+        when(request.getRequestURI()).thenReturn("/patients");
+        FeignException feignException = createFeignException(status, body);
+
+        // Act
+        ModelAndView mav = feignExceptionHandler.handleFeignException(feignException, request);
+
+        // Assert
+        assertEquals("list", mav.getViewName());
+        assertEquals("patients", mav.getModel().get("currentPage"));
+        assertTrue(((List<?>) mav.getModel().get("patients")).isEmpty());
+    }
+
+    private static Stream<Arguments> provide4xxStatusCodesForPatients() {
+        return Stream.of(
+                Arguments.of(400, "Bad Request"),
+                Arguments.of(404, "Not Found"),
+                Arguments.of(409, "{\"error\":\"Conflict\"}")
+        );
     }
 
     @ParameterizedTest
     @MethodSource("provide5xxStatusCodes")
-    void handleFeignException_WhenFeignExceptionOnDataFetchWithStatus5xx_ShouldRedirectToHome(int status, String expectedMessage) {
+    void handleFeignException_WhenStatus5xx_ShouldReturnHomeView(int status, String expectedMessage) {
         // Arrange
-        when(request.getAttribute("patient")).thenReturn(patientBean);
-        when(request.getRequestURI()).thenReturn("/test");
-
-        // Simule une FeignException avec un statut 5xx lors de la récupération des données du patient
-        FeignException innerException = createFeignException(status, "Error");
-        when(servicesProxy.retrievePatientId(anyLong())).thenThrow(innerException);
-
-        // Crée une FeignException initiale (par exemple, 400)
-        FeignException feignException = createFeignException(400, "[]");
+        FeignException feignException = createFeignException(status, "Error");
 
         // Act
         ModelAndView mav = feignExceptionHandler.handleFeignException(feignException, request);
@@ -349,8 +402,8 @@ public class FeignExceptionHandlerTest {
 
     private static Stream<Arguments> provide5xxStatusCodes() {
         return Stream.of(
-                Arguments.of(503, "A required service is currently unavailable. Please try again later."),
-                Arguments.of(500, "A service encountered an internal error (status 500). Please try again later.")
+                Arguments.of(500, "A service encountered an internal error (status 500). Please try again later."),
+                Arguments.of(503, "A required service is currently unavailable. Please try again later.")
         );
     }
 
