@@ -1,18 +1,21 @@
-# Utilise une image Alpine légère avec JRE 21 (pas besoin de JDK en production) sinon eclipse-temurin:21-jdk-jammy (assez lourd mais avec un JDK)
+# Use a lightweight Alpine image with JRE 21 (no need for JDK in production) or eclipse-temurin:21-jdk-jammy (quite heavy but with a JDK)
 FROM eclipse-temurin:21-jre-alpine
 
-# Définit le répertoire de travail dans le conteneur
+# Sets the working directory in the container
 WORKDIR /app
 
-# Variables d'environnement pour la configuration
+# Environment variables for configuration
 ENV EUREKA_SERVER_HOST=eureka-server
 ENV EUREKA_SERVER_PORT=9102
 
-# Copier le jar de l'application
+# Install curl (required for healthcheck)
+RUN apk add --no-cache curl
+
+# Copy the application jar file
 COPY target/clientui-*.jar app.jar
 
-# Exposer le port sur lequel Eureka écoute
+# Expose the port listening
 EXPOSE 8090
 
-# Commande pour lancer l'application
+# Command to launch the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
