@@ -41,7 +41,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Determines whether this filter should be applied to the current request.
-     * Static resources (e.g., CSS, webjars, favicon) are excluded to avoid breaking the UI.
+     * Static resources (e.g., CSS, webjars, favicon, actuator) are excluded to avoid breaking the UI.
      *
      * @param request The current {@link HttpServletRequest}.
      * @return {@code true} if the request should be excluded from filtering, {@code false} otherwise.
@@ -49,7 +49,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/webjars/") || path.startsWith("/css/") || path.equals("/favicon.ico");
+        return path.startsWith("/webjars/") || path.startsWith("/css/") || path.equals("/favicon.ico") || path.startsWith("/actuator/");
     }
 
     /**
@@ -99,7 +99,8 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
             logger.debug("Authorities: {}", authorities);
 
         } else {
-            logger.warn("No X-Auth-Username header found!");
+            String path = request.getRequestURI();
+            logger.warn("No X-Auth-Username header found in path : {}", path);
         }
 
         filterChain.doFilter(request, response);

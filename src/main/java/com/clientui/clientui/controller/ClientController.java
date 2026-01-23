@@ -8,12 +8,10 @@ import com.clientui.clientui.tracing.TracingHelper;
 import feign.FeignException;
 import io.micrometer.tracing.annotation.NewSpan;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -164,23 +162,26 @@ public class ClientController {
     }
 
     /**
-     * Adds a note for a specific patient.
+     * Adds a new note for a specific patient and updates the view accordingly.
      *
-     * @param id                  The ID of the patient.
-     * @param newNote             The note to add.
-     * @param result              The binding result for validation.
-     * @param model               The model to which attributes are added.
-     * @param redirectAttributes  Attributes for redirecting with flash messages.
-     * @return A redirect to the patient update page.
+     * <p>This method retrieves the patient by ID, associates the new note with the patient,
+     * and persists the note via the services proxy. It also sets the patient and note as
+     * request attributes for further processing in the view layer.
+     *
+     * @param id                  The unique identifier of the patient.
+     * @param newNote             The note to be added, wrapped in a {@link NoteBean}.
+     * @param model               The model to which attributes can be added (not used in this method).
+     * @param request             The HTTP request, used to set attributes for the view.
+     * @param redirectAttributes  Attributes for redirecting with flash messages (success/error).
+     * @return A redirect to the patient update page, including the patient ID in the path.
+     * @throws FeignException     If the patient is not found or the note cannot be added.
      */
 @PostMapping("/update/{id}/addnotes")
 @NewSpan("clientui-patient-add-note")
 public String addNote(
         @PathVariable("id") Long id,
-        @Valid @ModelAttribute("newNote") NoteBean newNote,
-        BindingResult result,
-        Model model,
-        RedirectAttributes redirectAttributes) {
+        @ModelAttribute("newNote") NoteBean newNote,
+        Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) {
 
     tracing.tag("patient.id", id);
     tracing.event("Adding note");
@@ -196,17 +197,12 @@ public String addNote(
         return "redirect:/patients";
     }
 
-    if (result.hasErrors()) {
-        result.getAllErrors().forEach(error -> logger.warn("Validation error: {}", error.getDefaultMessage()));
-        tracing.error("ValidationError", "Invalid note data");
-        List<NoteBean> notes = servicesProxy.retrieveNotesPatId(id);
-        model.addAttribute("patient", patient);
-        model.addAttribute("notes", notes);
-        return "update";
-    }
+//    // Passe le patient et la nouvelle note en attribut de la requête
+    request.setAttribute("patient", patient);
+    request.setAttribute("newNote", newNote);
+    request.setAttribute("targetView", "update");
 
     servicesProxy.addNote(newNote);
-
     redirectAttributes.addFlashAttribute("success", "Note successfully added");
     return "redirect:/update/" + id;
 }

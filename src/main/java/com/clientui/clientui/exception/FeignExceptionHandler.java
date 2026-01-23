@@ -63,23 +63,43 @@ public class FeignExceptionHandler {
     MicroservicesProxy servicesProxy;
 
     /**
-     * Handles exceptions of type {@link FeignException} thrown during Feign client calls.
-     * This method analyzes the HTTP status code and error content to provide appropriate feedback
-     * to the user, such as validation errors, conflicts, or service unavailability.
+     * Handles exceptions of type {@link FeignException} thrown during Feign client calls in the context of patient management.
+     * This method analyzes the HTTP status code and error content to provide user-friendly feedback,
+     * such as validation errors, conflicts, or service unavailability. It also ensures the UI remains consistent
+     * by retrieving the latest patient data, notes, and risk level when possible.
      *
-     * <p>Steps:</p>
+     * <p><strong>Processing Steps:</strong></p>
      * <ol>
-     *   <li>Logs the error and checks for critical service errors (500, 503).</li>
-     *   <li>Retrieves the patient ID from the request attributes.</li>
-     *   <li>Fetches the latest patient data, notes, and risk level (if possible).</li>
-     *   <li>Processes the Feign error response (e.g., validation errors, conflicts).</li>
-     *   <li>Redirects the user to the appropriate view with error details.</li>
+     *   <li><strong>Critical Errors (500, 503):</strong> Redirects to a service unavailable handler.</li>
+     *   <li><strong>Patient List Requests (/patients):</strong> Returns a view with an empty patient list and an error message.</li>
+     *   <li><strong>Patient-Specific Requests (/update):</strong> Retrieves the patient ID from the request attributes,
+     *       fetches the latest patient data, notes, and risk level, and processes the error response.</li>
+     *   <li><strong>Validation Errors (400):</strong> Parses the error response to extract field-specific validation messages
+     *       and returns them to the update view.</li>
+     *   <li><strong>Conflict Errors (409):</strong> Extracts the conflict message and returns it to the appropriate view.</li>
+     *   <li><strong>Other Errors:</strong> Redirects to the home page with a generic error message.</li>
      * </ol>
      *
-     * @param e       The {@link FeignException} thrown by the Feign client.
-     * @param request The current {@link HttpServletRequest}, used to retrieve patient context and target view.
-     * @return A {@link ModelAndView} object containing the error details and patient data,
-     *         or a redirect to the home/patients page in case of critical errors.
+     * <p><strong>Error Handling:</strong></p>
+     * <ul>
+     *   <li>Logs critical errors and redirects to a dedicated error handler for service unavailability.</li>
+     *   <li>For validation errors, maps field-specific messages to the UI for user correction.</li>
+     *   <li>For conflicts, extracts and displays the error message from the response body.</li>
+     *   <li>For all other errors, redirects to the home page with a generic error message.</li>
+     * </ul>
+     *
+     * @param e       The {@link FeignException} thrown by the Feign client, containing the HTTP status and error details.
+     * @param request The current {@link HttpServletRequest}, used to retrieve the patient context, target view,
+     *                and request attributes (e.g., patient ID, new note).
+     * @return A {@link ModelAndView} object containing:
+     *         <ul>
+     *           <li>The patient data, notes, and risk level (if available).</li>
+     *           <li>Field-specific validation errors (for 400 responses).</li>
+     *           <li>Conflict or generic error messages (for 409 or other responses).</li>
+     *           <li>A redirect to the home page for critical or unhandled errors.</li>
+     *         </ul>
+     * @see #handleServiceUnavailable(FeignException, HttpServletRequest)
+     * @see ValidationErrorDTO
      */
     @ExceptionHandler(FeignException.class)
     public ModelAndView handleFeignException(FeignException e, HttpServletRequest request) {
@@ -102,7 +122,7 @@ public class FeignExceptionHandler {
         final PatientBean requestPatient = (PatientBean) request.getAttribute("patient");
         if (requestPatient == null) {
             logger.error("No patient ID found in query.");
-            return new ModelAndView("redirect:/home").addObject("error", "No patient ID found in query.");
+            return new ModelAndView("home").addObject("error", "No patient ID found in query.");
         }
 
         Long patientId = null;
@@ -164,7 +184,15 @@ public class FeignExceptionHandler {
                 for (ValidationErrorDTO err : errors) {
                     errorMap.put(err.getField(), err.getDefaultMessage());
                 }
+
+                // We set the newNote with the values entered by the user.
+                NoteBean noteFromRequest = (NoteBean) request.getAttribute("newNote");
+                if (noteFromRequest != null) {
+                    mav.addObject("newNote", noteFromRequest);
+                }
+
                 mav.addObject("errors", errorMap);
+                mav.setViewName("update");
             }
             // 409 - Conflit / duplicate
             else if (e.status() == 409) {
@@ -172,17 +200,20 @@ public class FeignExceptionHandler {
                     Map<String, String> map = objectMapper.readValue(body, Map.class);
                     mav.addObject("error", map.getOrDefault("error", "Conflict detected."));
                 } catch (Exception ex) {
-                    return new ModelAndView("redirect:/home")
+                    return new ModelAndView("home")
+                            .addObject("currentPage", "home")
                             .addObject("error", "Conflict detected (unexpected format): " + ex.getMessage());
                 }
             }
             // Other HTTP codes
             else {
-                return new ModelAndView("redirect:/home")
+                return new ModelAndView("home")
+                        .addObject("currentPage", "home")
                         .addObject("error", "Error " + e.status() + " : " + e.getMessage());
             }
         } catch (Exception ex) {
-            return new ModelAndView("redirect:/home")
+            return new ModelAndView("home")
+                    .addObject("currentPage", "home")
                     .addObject("error", "Error processing response status : " + ex.getMessage());
         }
 
@@ -207,7 +238,7 @@ public class FeignExceptionHandler {
             errorMessage = "A service encountered an internal error (status " + e.status() + "). Please try again later.";
         }
 
-        ModelAndView mav = new ModelAndView("/home");
+        ModelAndView mav = new ModelAndView("home");
         mav.addObject("currentPage", "home");
         mav.addObject("error", errorMessage);
         return mav;
