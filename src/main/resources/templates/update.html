@@ -123,7 +123,7 @@
                     <div class="mb-3 row">
                         <div class="col-sm-10">
                             <textarea class="form-control w-100" th:field="*{note}" rows="3" placeholder="Enter note here..."></textarea>
-                            <p class="text-danger" th:if="${#fields.hasErrors('note')}" th:errors="*{note}"></p>
+                            <span th:if="${errors != null && errors.containsKey('note')}" class="text-danger" th:text="${errors['note']}"></span>
                         </div>
                     </div>
                     <div class="mb-3 row">

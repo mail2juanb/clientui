@@ -226,7 +226,7 @@ public class ClientControllerIntegrationTest {
                         .param("address", "123 Test St")
                         .param("phone", "555-1234"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("add"))
+                .andExpect(view().name("update"))
                 .andExpect(model().attributeExists("errors"))
                 .andExpect(model().attribute("errors",
                         org.hamcrest.Matchers.hasEntry("lastname", "Lastname cannot be empty")));

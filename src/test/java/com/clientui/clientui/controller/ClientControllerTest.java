@@ -5,6 +5,9 @@ import com.clientui.clientui.beans.PatientBean;
 import com.clientui.clientui.beans.RiskLevelBean;
 import com.clientui.clientui.proxies.MicroservicesProxy;
 import com.clientui.clientui.tracing.TracingHelper;
+import feign.FeignException;
+import feign.Request;
+import feign.RequestTemplate;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,10 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -170,69 +174,120 @@ public class ClientControllerTest {
     }
 
 
+    // ========== TESTS addNote MODIFIÉS ==========
+
     @Test
-    void addNote_withValidationErrors_shouldReturnUpdateView() {
+    void addNote_whenPatientNotFound_shouldRedirectToPatients() {
         Model model = mock(Model.class);
         BindingResult result = mock(BindingResult.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
         RedirectAttributes redirectAttributes = mock(RedirectAttributes.class);
 
         NoteBean note = new NoteBean();
-        PatientBean patient = new PatientBean();
 
-        when(result.hasErrors()).thenReturn(true);
-        when(servicesProxy.retrievePatientId(1L)).thenReturn(patient);
-        when(servicesProxy.retrieveNotesPatId(1L)).thenReturn(List.of());
+        // Créer une FeignException.NotFound
+        Request mockRequest = Request.create(Request.HttpMethod.GET, "/api/patients/999",
+                new HashMap<>(), null, new RequestTemplate());
+        FeignException.NotFound notFoundException = new FeignException.NotFound(
+                "Patient not found", mockRequest, null, null);
 
-        String view = controller.addNote(1L, note, result, model, redirectAttributes);
+        when(servicesProxy.retrievePatientId(999L)).thenThrow(notFoundException);
 
-        assertThat(view).isEqualTo("update");
+        String view = controller.addNote(999L, note, model, request, redirectAttributes);
+
+        assertThat(view).isEqualTo("redirect:/patients");
+        verify(redirectAttributes).addFlashAttribute("error", "Patient not found.");
         verify(servicesProxy, never()).addNote(any());
     }
 
     @Test
-    void addNote_withValidationErrors_shouldLogErrors() {
-        Model model = mock(Model.class);
-        BindingResult result = mock(BindingResult.class);
+    void addNote_withNonExistentPatient_shouldRedirectToPatients() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        RedirectAttributes redirectAttributes = mock(RedirectAttributes.class);
+
+        when(servicesProxy.retrievePatientId(1L))
+                .thenThrow(new FeignException.NotFound(
+                        "Patient not found",
+                        Request.create(Request.HttpMethod.GET, "/patients/1", Map.of(), null, null, null),
+                        null,
+                        Map.of()
+                ));
+
+        String view = controller.addNote(1L, new NoteBean(), mock(Model.class), request, redirectAttributes);
+
+        assertThat(view).isEqualTo("redirect:/patients");
+        verify(redirectAttributes).addFlashAttribute("error", "Patient not found.");
+        verify(servicesProxy, never()).addNote(any());
+    }
+
+    @Test
+    void addNote_withValidNote_shouldRedirectWithSuccess() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
         RedirectAttributes redirectAttributes = mock(RedirectAttributes.class);
 
         NoteBean note = new NoteBean();
+        note.setNote("Valid note content");
+
         PatientBean patient = new PatientBean();
-        patient.setLastname("TestName");
+        patient.setId(1L);
+        patient.setLastname("Doe");
 
-        ObjectError error1 = new ObjectError("note", "Error 1");
-        ObjectError error2 = new ObjectError("note", "Error 2");
-
-        when(result.hasErrors()).thenReturn(true);
-        when(result.getAllErrors()).thenReturn(List.of(error1, error2));
         when(servicesProxy.retrievePatientId(1L)).thenReturn(patient);
-        when(servicesProxy.retrieveNotesPatId(1L)).thenReturn(List.of());
+        doNothing().when(servicesProxy).addNote(any(NoteBean.class));
 
-        controller.addNote(1L, note, result, model, redirectAttributes);
+        String view = controller.addNote(1L, note, mock(Model.class), request, redirectAttributes);
 
-        verify(result).getAllErrors();
+        assertThat(view).isEqualTo("redirect:/update/1");
+        verify(servicesProxy).addNote(note);
+        verify(redirectAttributes).addFlashAttribute("success", "Note successfully added");
+        verify(request).setAttribute("patient", patient);
+        verify(request).setAttribute("newNote", note);
     }
 
     @Test
     void addNote_withoutErrors_shouldRedirect() {
         Model model = mock(Model.class);
         BindingResult result = mock(BindingResult.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
         RedirectAttributes redirectAttributes = mock(RedirectAttributes.class);
 
         NoteBean note = new NoteBean();
         PatientBean patient = new PatientBean();
         patient.setLastname("Doe");
 
-        when(result.hasErrors()).thenReturn(false);
+        //when(result.hasErrors()).thenReturn(false);
         when(servicesProxy.retrievePatientId(1L)).thenReturn(patient);
 
-        String view = controller.addNote(1L, note, result, model, redirectAttributes);
+        String view = controller.addNote(1L, note, model, request, redirectAttributes);
 
         assertThat(view).isEqualTo("redirect:/update/1");
         assertThat(note.getPatId()).isEqualTo(1L);
         assertThat(note.getPatient()).isEqualTo("Doe");
         verify(servicesProxy).addNote(note);
-        verify(redirectAttributes)
-                .addFlashAttribute("success", "Note successfully added");
+        verify(redirectAttributes).addFlashAttribute("success", "Note successfully added");
+        verify(request).setAttribute("patient", patient);
+        verify(request).setAttribute("targetView", "update");
+    }
+
+    @Test
+    void addNote_withoutErrors_shouldSetRequestAttributes() {
+        Model model = mock(Model.class);
+        BindingResult result = mock(BindingResult.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        RedirectAttributes redirectAttributes = mock(RedirectAttributes.class);
+
+        NoteBean note = new NoteBean();
+        PatientBean patient = new PatientBean();
+        patient.setId(5L);
+        patient.setLastname("Smith");
+
+        //when(result.hasErrors()).thenReturn(false);
+        when(servicesProxy.retrievePatientId(5L)).thenReturn(patient);
+
+        controller.addNote(5L, note, model, request, redirectAttributes);
+
+        verify(request).setAttribute("patient", patient);
+        verify(request).setAttribute("targetView", "update");
     }
 
 
@@ -259,8 +314,7 @@ public class ClientControllerTest {
 
         assertThat(view).isEqualTo("redirect:/patients");
         verify(servicesProxy).addPatient(patient);
-        verify(redirectAttributes)
-                .addFlashAttribute("success", "Patient successfully added");
+        verify(redirectAttributes).addFlashAttribute("success", "Patient successfully added");
     }
 
     @Test
@@ -289,8 +343,7 @@ public class ClientControllerTest {
         assertThat(view).isEqualTo("redirect:/update/1");
         assertThat(patient.getId()).isEqualTo(1L);
         verify(servicesProxy).updatePatient(1L, patient);
-        verify(redirectAttributes)
-                .addFlashAttribute("success", "Patient successfully updated");
+        verify(redirectAttributes).addFlashAttribute("success", "Patient successfully updated");
     }
 
     @Test

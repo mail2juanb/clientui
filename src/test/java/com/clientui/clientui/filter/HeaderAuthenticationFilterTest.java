@@ -162,5 +162,18 @@ public class HeaderAuthenticationFilterTest {
         // Assert
         assertFalse(result, "Other static resources should not be excluded from filtering");
     }
+
+    @Test
+    void shouldNotFilter_WithActuatorPath_ShouldReturnTrue() throws ServletException {
+        // Arrange
+        when(request.getRequestURI()).thenReturn("/actuator/health");
+
+        // Act
+        boolean result = headerAuthenticationFilter.shouldNotFilter(request);
+
+        // Assert
+        assertTrue(result, "Actuator path should be excluded from filtering");
+    }
+
 }
 
